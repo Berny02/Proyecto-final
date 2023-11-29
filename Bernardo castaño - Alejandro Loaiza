@@ -1,0 +1,2757 @@
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <stdbool.h>
+#include <conio.h>
+#include <math.h>
+
+#define  RESET_COLOR    "\x1b[0m"
+#define NEGRO_T        "\x1b[30m"
+#define  ROJO_T      "\x1b[31m"
+#define VERDE_T        "\x1b[32m"
+#define AMARILLO_T  "\x1b[33m"
+#define AZUL_T       "\x1b[34m"
+#define MAGENTA_T   "\x1b[35m"
+#define CYAN_T      "\x1b[36m"
+#define BLANCO_T   "\x1b[37m"
+
+
+void quitarVotante(){
+    FILE *archivoElectores = fopen("Votantes.txt", "r");
+    
+    
+    int suma;
+    fscanf(archivoElectores, "%d", &suma);
+
+    char identificadorPersona[50];
+    char categoria[50];
+    char archivoIdentificacion[50];
+    char condicion[50];
+
+    char identificacion[50];
+    char categoria2[50];
+    int cantidadPersonas;
+
+    printf(AZUL_T  "Digite el documento de identidad del elector del que desea eliminar su informacion: " RESET_COLOR);
+    fgets(identificacion, sizeof(identificacion), stdin);
+    identificacion[strlen(identificacion) - 1] = '\0';
+
+    for(int i = 0; i < suma; i++){
+        fscanf(archivoElectores, "%s %s %s %s", identificadorPersona, categoria2, archivoIdentificacion, condicion);
+
+        if(strcmp(archivoIdentificacion, identificacion) == 0){
+            break;
+        }
+    }
+
+    if(strcmp(condicion, "VERDADERO") == 0){
+        printf(AZUL_T  "El elector ingresado ya realizo su voto, por lo tanto, no se puede eliminar su informacion\n" RESET_COLOR);
+
+        fclose(archivoElectores);
+        return;
+    } else {
+
+        FILE *auxiliarVotantes = fopen("auxiliarVotantes.txt", "w");
+
+        FILE *tipoVoto = fopen("TipoVoto.txt", "r");
+        FILE *auxiliartipoVoto = fopen("auxiliarTipoVoto.txt", "w");
+
+
+        rewind(archivoElectores);
+        fscanf(archivoElectores, "%d", &suma);
+
+        fprintf(auxiliarVotantes, "%d\n", suma - 1);
+
+        for(int i = 0; i < suma; i++){
+            fscanf(archivoElectores, "%s %s %s %s", identificadorPersona, categoria, archivoIdentificacion, condicion);
+
+        if(strcmp(archivoIdentificacion, identificacion) == 0){
+            
+        } else {
+            fprintf(auxiliarVotantes, "%s\n%s\n%s\n%s\n", identificadorPersona, categoria, archivoIdentificacion, condicion);
+        }
+        }
+
+        for(int i = 0; i < 4; i++){
+            fscanf(tipoVoto, "%s %d", categoria, &cantidadPersonas);
+            if(strcmp(categoria, categoria2)){
+                fprintf(auxiliartipoVoto, "%s\n%d\n", categoria, cantidadPersonas);
+            } else {
+                fprintf(auxiliartipoVoto, "%s\n%d\n", categoria, cantidadPersonas);
+            }
+        }
+
+        printf( ROJO_T "La informacion del elector ha sido eliminada\n" RESET_COLOR);
+
+        fclose(auxiliarVotantes);
+        fclose(auxiliartipoVoto);
+        fclose(archivoElectores);
+        fclose(tipoVoto);
+
+        remove("Votantes.txt");
+        rename("auxiliarVotantes.txt", "Votantes.txt");
+
+        
+        remove("TipoVoto.txt");
+        rename("auxiliarTipoVoto.txt", "TipoVoto.txt");
+    }
+    
+    
+}
+
+void cambiarVotante(){
+    FILE *archivoElectores = fopen("Votantes.txt", "r");
+    
+    
+    int suma;
+    fscanf(archivoElectores, "%d", &suma);
+
+    char nombreNuevoElector[50];
+    char identificadorPersona[50];
+    char categoria[50];
+    char documentoArchivoAReemplazar[50];
+    char archivoIdentificacion[50];
+    char condicion[50];
+
+    char tipoNuevoArchivo[50];
+    char estadoNuevo[50];
+    char identificacion[50];
+    char categoria2[50];
+    int cantidadPersonas, verificacion = 0;
+    char tipoValidacion[50];
+
+    printf(AZUL_T  "Digite el número de identificacion del elector del cual desea modificar su informacion: " RESET_COLOR);
+    fgets(identificacion, sizeof(identificacion), stdin);
+    identificacion[strlen(identificacion) - 1] = '\0';
+
+     for(int i = 0; i < suma; i++){
+        fscanf(archivoElectores, "%s %s %s %s", nombreNuevoElector, tipoNuevoArchivo, documentoArchivoAReemplazar, estadoNuevo);
+
+        if(strcmp(documentoArchivoAReemplazar, identificacion) == 0){
+            break;
+        }
+    }
+
+    if(strcmp(estadoNuevo, "VERDADERO") == 0){
+        printf(AZUL_T  "El elector ya ha realizado su voto, por lo tanto, no se puede modificar su informacion\n");
+
+        fclose(archivoElectores);
+        return;
+    }
+
+    printf( ROJO_T "Digite el nombre de la persona: " RESET_COLOR);
+    fgets(nombreNuevoElector, sizeof(nombreNuevoElector), stdin);
+
+    printf( ROJO_T "Digite el número de identificación de la persona: " RESET_COLOR);
+    fgets(identificacion, sizeof(identificacion), stdin);
+
+    if(strlen(identificacion) - 1 < 7 || strlen(identificacion) > 11){
+        printf(VERDE_T"La suma de digitos ingresados como numero de identificacion no concuerdan con el formato que deben de tener.\n\n" RESET_COLOR);
+        return;
+    } 
+
+     for(int i = 0; i < strlen(identificacion) - 1; i++){
+        if(!isdigit(identificacion[i])) {
+            verificacion = 1;
+            break;  // Si encuentra un carácter no válido, salir del bucle
+        }
+    }
+
+    if(verificacion) {
+        printf(VERDE_T"El número de identificación solo puede tener numeros.\n" RESET_COLOR);
+        fclose(archivoElectores);
+        return;
+    }
+
+    printf(AZUL_T  "Ingrese que labor cumple ( ESTUDIANTE,EGRESADO,ADMINISTRATIVO O DOCENTE ): " RESET_COLOR);
+    fgets(categoria, sizeof(categoria), stdin);
+    
+    int longitud = strlen(categoria) - 1;
+
+
+    for(int i = 0; i < longitud; i++){
+        tipoValidacion[i] = tolower(categoria[i]);
+    }
+
+    
+
+    tipoValidacion[strlen(categoria) - 1] = '\0';
+
+    if(strcmp(tipoValidacion, "estudiante") != 0 && 
+       strcmp(tipoValidacion, "docente") != 0 && 
+       strcmp(tipoValidacion, "administrativo") != 0 && 
+       strcmp(tipoValidacion, "egresado") != 0){
+        printf("Rol inexistente\n");
+        fclose(archivoElectores);
+        return;
+    }
+
+    FILE *auxiliarVotantes = fopen("auxiliarVotantes.txt", "w");
+    rewind(archivoElectores);
+
+    fscanf(archivoElectores, "%d", &suma);
+    fprintf(auxiliarVotantes, "%d\n", suma);
+
+
+
+    for(int i = 0; i < suma; i++){
+        fscanf(archivoElectores, "%s %s %s %s", identificadorPersona, cantidadPersonas, archivoIdentificacion, condicion);
+
+        if(strcmp(archivoIdentificacion, documentoArchivoAReemplazar) == 0){
+            fprintf(auxiliarVotantes, "%s %s\n%s  %s\n", nombreNuevoElector, tipoNuevoArchivo, identificacion, estadoNuevo);
+        } else {
+            fprintf(auxiliarVotantes, "%s\n%s\n%s\n%s\n", identificadorPersona, cantidadPersonas, archivoIdentificacion, condicion);
+        }
+    }
+
+    fclose(auxiliarVotantes);
+    fclose(archivoElectores);
+    
+
+    remove("Votantes.txt");
+    rename("auxiliarVotantes.txt", "Votantes.txt");
+
+
+
+}
+
+void quitarCandidato(){
+    FILE *archivoCandidatos = fopen("Candidatos.txt", "r");
+
+    int numCandidato;
+    printf(MAGENTA_T "Digite el numero correspondiente al candidato que desea eliminar: ");
+    scanf("%d", &numCandidato);
+
+    int suma;
+    fscanf(archivoCandidatos, "%d", &suma);
+
+
+    char candidato[50];
+    int numeroCandidato, verificacion = 0;
+    char organizacion[50];
+    for(int i = 0; i < suma; i++){
+        fscanf(archivoCandidatos, "%s %d %s", candidato, &numeroCandidato, organizacion);
+        if(numeroCandidato == numCandidato){
+            printf(MAGENTA_T "El candidato que desea eliminar es %s con el numero %d perteneciente a la organizacion %s?: (Si: 1 / No: 0): " RESET_COLOR, candidato, numeroCandidato, organizacion);
+            scanf("%d", &verificacion);
+            break;
+        }
+    }
+
+    if(verificacion){
+        
+        FILE *archivoVotos = fopen("Votos.txt", "r");
+        fscanf(archivoVotos, "%d", &suma);
+
+        int votos, comprobacionVotos = 1;
+        for(int i = 0; i < suma; i++){
+             fscanf(archivoVotos, "%s %d %d", candidato, &numeroCandidato, &votos);
+             if(numeroCandidato == numCandidato){
+                if(votos != 0){
+                    comprobacionVotos = 0;
+                    break;
+                }
+             }
+        }
+
+        if(comprobacionVotos){
+            FILE *auxiliarCandidatos = fopen("auxiliarCandidatos.txt", "w");
+            FILE *archivoVotosEstudiantes = fopen("estudiantesCantidadVotos.txt", "r");
+            FILE *archivoVotosEgresados = fopen("egresadosCantidadVotos.txt", "r");
+            FILE *archivoVotosAdministrativos = fopen("administrativosCantidadVotos.txt", "r");
+            FILE *archivoVotosDocentes = fopen("docentesCantidadVotos.txt", "r");
+
+            FILE *auxiliarEstudiantes = fopen("auxiliarVotosEstudiantes.txt", "w");
+            FILE *auxiliarEgresados = fopen("auxiliarVotosEgresados.txt", "w");
+            FILE *auxiliarAdministrativos = fopen("auxiliarVotosAdministrativos.txt", "w");
+            FILE *auxiliarDocentes = fopen("auxiliarVotosDocentes.txt", "w");
+            FILE *auxiliarVotos = fopen("auxiliarVotos.txt", "w");
+            
+
+            char nombre2[50];
+            int num2;
+            char organizacion2[50];
+
+            rewind(archivoCandidatos);
+            rewind(archivoVotos);
+
+            fscanf(archivoCandidatos, "%d", &suma);
+            fscanf(archivoVotos, "%d", &suma);
+            fscanf(archivoVotosAdministrativos, "%d", &suma);
+            fscanf(archivoVotosEstudiantes, "%d", &suma);
+            fscanf(archivoVotosEgresados, "%d", &suma);
+            fscanf(archivoVotosDocentes, "%d", &suma);
+
+            suma--;
+
+            fprintf(auxiliarCandidatos, "%d\n", suma);
+            fprintf(auxiliarVotos, "%d\n", suma);
+            fprintf(auxiliarEstudiantes, "%d\n", suma);
+            fprintf(auxiliarEgresados, "%d\n", suma);
+            fprintf(auxiliarDocentes, "%d\n", suma);
+            fprintf(auxiliarAdministrativos, "%d\n", suma);
+
+            
+            for(int i = 0; i < suma + 1; i++){
+                fscanf(archivoCandidatos, "%s %d %s", nombre2, &num2, organizacion2);
+
+                if(num2 != numCandidato){
+                    fprintf(auxiliarCandidatos, "%s\n%d\n%s\n", nombre2, num2, organizacion2);
+                }
+
+                fscanf(archivoVotos, "%s %d %d", nombre2, &num2, &votos);
+                if(num2 != numCandidato){
+                    fprintf(auxiliarVotos, "%s\n%d\n%d\n", nombre2, num2, votos);
+                }
+
+                fscanf(archivoVotosEgresados, "%s %d %d", nombre2, &num2, &votos);
+
+                if(num2 != numCandidato){
+                    fprintf(auxiliarEgresados, "%s\n%d\n%d\n", nombre2, num2, votos);
+                }
+
+                fscanf(archivoVotosEstudiantes, "%s %d %d", nombre2, &num2, &votos);
+
+                if(num2 != numCandidato){
+                    fprintf(auxiliarEstudiantes, "%s\n%d\n%d\n", nombre2, num2, votos);
+                }
+
+                fscanf(archivoVotosDocentes, "%s %d %d", nombre2, &num2, &votos);
+
+                if(num2 != numCandidato){
+                    fprintf(auxiliarDocentes, "%s\n%d\n%d\n", nombre2, num2, votos);
+                }
+
+                fscanf(archivoVotosAdministrativos, "%s %d %d", nombre2, &num2, &votos);
+
+                if(num2 != numCandidato){
+                    fprintf(auxiliarAdministrativos, "%s\n%d\n%d\n", nombre2, num2, votos);
+                }
+
+            }
+
+            fclose(archivoVotosAdministrativos);
+            fclose(archivoVotosEgresados);
+            fclose(archivoVotosEstudiantes);
+            fclose(archivoVotosDocentes);
+            fclose(archivoCandidatos);
+            fclose(archivoVotos);
+
+            fclose(auxiliarCandidatos);
+            fclose(auxiliarVotos);
+            fclose(auxiliarEstudiantes);
+            fclose(auxiliarEgresados);
+            fclose(auxiliarAdministrativos);
+            fclose(auxiliarDocentes);
+
+            remove("Candidatos.txt");
+            rename("auxiliarCandidatos.txt", "Candidatos.txt");
+
+            remove("Votos.txt");
+            rename("auxiliarVotos.txt", "Votos.txt");
+
+            remove("administrativosCantidadVotos.txt");
+            rename("auxiliarVotosAdministrativos.txt", "administrativosCantidadVotos.txt");
+
+            remove("estudiantesCantidadVotos.txt");
+            rename("auxiliarVotosEstudiantes.txt", "estudiantesCantidadVotos.txt");
+
+            remove("docentesCantidadVotos.txt");
+            rename("auxiliarVotosDocentes.txt", "docentesCantidadVotos.txt");
+
+            
+            remove("egresadosCantidadVotos.txt");
+            rename("auxiliarVotosEgresados.txt", "egresadosCantidadVotos.txt");
+
+        } else {
+            printf( ROJO_T "No es posible eliminar el candidato %s, debido a que ya ha recibido al menos un voto durante las votaciones\n" RESET_COLOR, candidato);
+            fclose(archivoCandidatos);
+            fclose(archivoVotos);
+            return;
+        }
+
+
+
+    } else if(verificacion != 1) {
+        printf(AZUL_T  "Volviendo al menu\n" RESET_COLOR);
+        fclose(archivoCandidatos);
+    }
+
+}
+
+void cambiarCandidato(){
+     FILE *archivoCandidatos = fopen("Candidatos.txt", "r");
+
+    int numCandidato;
+    printf(CYAN_T "Digite el numero correspondiente al candidato del que desea modificar su informacion: " RESET_COLOR);
+    scanf("%d", &numCandidato);
+    
+
+    int suma;
+    fscanf(archivoCandidatos, "%d", &suma);
+
+
+    char candidato[50];
+    int numeroCandidato, verificacion = 0;
+    char organizacion[50];
+    for(int i = 0; i < suma; i++){
+        fscanf(archivoCandidatos, "%s %d %s", candidato, &numeroCandidato, organizacion);
+        if(numeroCandidato == numCandidato){
+            printf(CYAN_T "El candidato del que desea modificar su informacion es %s con el numero %d perteneciente a la organizacion %s?: (Si: 1 / No: 0): " RESET_COLOR, candidato, numeroCandidato, organizacion);
+            scanf("%d", &verificacion);
+            break;
+        }
+    }
+
+     if(verificacion){
+        FILE *archivoVotos = fopen("Votos.txt", "r");
+        fscanf(archivoVotos, "%d", &suma);
+
+        int votos, comprobacionVotos = 1;
+        for(int i = 0; i < suma; i++){
+             fscanf(archivoVotos, "%s %d %d", candidato, &numeroCandidato, &votos);
+             if(numeroCandidato == numCandidato){
+                if(votos != 0){
+                    comprobacionVotos = 0;
+                    break;
+                }
+             }
+        }
+
+        if(comprobacionVotos){
+
+            char nuevoNombre[50];
+            char nuevaOrganizacion[50];
+            getchar();
+            printf(AZUL_T  "Digite el nombre del candidato: " RESET_COLOR);
+            fgets(nuevoNombre, sizeof(nuevoNombre), stdin);
+
+            printf(CYAN_T "Digite la organizacion del candidato: " RESET_COLOR);
+            fgets(nuevaOrganizacion, sizeof(nuevaOrganizacion), stdin);
+
+
+
+            FILE *auxiliarCandidatos = fopen("auxiliarCandidatos.txt", "w");
+            FILE *archivoVotosEstudiantes = fopen("estudiantesCantidadVotos.txt", "r");
+            FILE *archivoVotosEgresados = fopen("egresadosCantidadVotos.txt", "r");
+            FILE *archivoVotosAdministrativos = fopen("administrativosCantidadVotos.txt", "r");
+            FILE *archivoVotosDocentes = fopen("docentesCantidadVotos.txt", "r");
+
+            FILE *auxiliarEstudiantes = fopen("auxiliarVotosEstudiantes.txt", "w");
+            FILE *auxiliarEgresados = fopen("auxiliarVotosEgresados.txt", "w");
+            FILE *auxiliarAdministrativos = fopen("auxiliarVotosAdministrativos.txt", "w");
+            FILE *auxiliarDocentes = fopen("auxiliarVotosDocentes.txt", "w");
+            FILE *auxiliarVotos = fopen("auxiliarVotos.txt", "w");
+            
+
+            char nombre2[50];
+            int num2;
+            char organizacion2[50];
+
+            rewind(archivoCandidatos);
+            rewind(archivoVotos);
+
+            fscanf(archivoCandidatos, "%d", &suma);
+            fscanf(archivoVotos, "%d", &suma);
+            fscanf(archivoVotosAdministrativos, "%d", &suma);
+            fscanf(archivoVotosEstudiantes, "%d", &suma);
+            fscanf(archivoVotosEgresados, "%d", &suma);
+            fscanf(archivoVotosDocentes, "%d", &suma);
+
+            
+
+            fprintf(auxiliarCandidatos, "%d\n", suma);
+            fprintf(auxiliarVotos, "%d\n", suma);
+            fprintf(auxiliarEstudiantes, "%d\n", suma);
+            fprintf(auxiliarEgresados, "%d\n", suma);
+            fprintf(auxiliarDocentes, "%d\n", suma);
+            fprintf(auxiliarAdministrativos, "%d\n", suma);
+
+            
+            for(int i = 0; i < suma; i++){
+                fscanf(archivoCandidatos, "%s %d %s", nombre2, &num2, organizacion2);
+
+                if(num2 != numCandidato){
+                    fprintf(auxiliarCandidatos, "%s\n%d\n%s\n", nombre2, num2, organizacion2);
+                } else {
+                    fprintf(auxiliarCandidatos, "%s %d\n%s", nuevoNombre, num2, nuevaOrganizacion);
+                }
+
+                fscanf(archivoVotos, "%s %d %d", nombre2, &num2, &votos);
+                if(num2 != numCandidato){
+                    fprintf(auxiliarVotos, "%s\n%d\n%d\n", nombre2, num2, votos);
+                } else {
+                    fprintf(auxiliarVotos, "%s %d\n%d\n", nuevoNombre, num2, votos);
+                }
+
+                fscanf(archivoVotosEgresados, "%s %d %d", nombre2, &num2, &votos);
+
+                if(num2 != numCandidato){
+                    fprintf(auxiliarEgresados, "%s\n%d\n%d\n", nombre2, num2, votos);
+                } else {
+                    fprintf(auxiliarEgresados, "%s %d\n%d\n", nuevoNombre, num2, votos);
+                }
+
+                fscanf(archivoVotosEstudiantes, "%s %d %d", nombre2, &num2, &votos);
+
+                if(num2 != numCandidato){
+                    fprintf(auxiliarEstudiantes, "%s\n%d\n%d\n", nombre2, num2, votos);
+                } else {
+                    fprintf(auxiliarEstudiantes, "%s %d\n%d\n", nuevoNombre, num2, votos);
+                }
+
+                fscanf(archivoVotosDocentes, "%s %d %d", nombre2, &num2, &votos);
+
+                if(num2 != numCandidato){
+                    fprintf(auxiliarDocentes, "%s\n%d\n%d\n", nombre2, num2, votos);
+                } else {
+                    fprintf(auxiliarDocentes, "%s %d\n%d\n", nuevoNombre, num2, votos);
+                }
+
+                fscanf(archivoVotosAdministrativos, "%s %d %d", nombre2, &num2, &votos);
+
+                if(num2 != numCandidato){
+                    fprintf(auxiliarAdministrativos, "%s\n%d\n%d\n", nombre2, num2, votos);
+                } else {
+                    fprintf(auxiliarAdministrativos, "%s %d\n%d\n", nuevoNombre, num2, votos);
+                }
+
+            }
+
+            fclose(archivoVotosAdministrativos);
+            fclose(archivoVotosEgresados);
+            fclose(archivoVotosEstudiantes);
+            fclose(archivoVotosDocentes);
+            fclose(archivoCandidatos);
+            fclose(archivoVotos);
+
+            fclose(auxiliarCandidatos);
+            fclose(auxiliarVotos);
+            fclose(auxiliarEstudiantes);
+            fclose(auxiliarEgresados);
+            fclose(auxiliarAdministrativos);
+            fclose(auxiliarDocentes);
+
+            remove("Candidatos.txt");
+            rename("auxiliarCandidatos.txt", "Candidatos.txt");
+
+            remove("Votos.txt");
+            rename("auxiliarVotos.txt", "Votos.txt");
+
+            remove("administrativosCantidadVotos.txt");
+            rename("auxiliarVotosAdministrativos.txt", "administrativosCantidadVotos.txt");
+
+            remove("estudiantesCantidadVotos.txt");
+            rename("auxiliarVotosEstudiantes.txt", "estudiantesCantidadVotos.txt");
+
+            remove("docentesCantidadVotos.txt");
+            rename("auxiliarVotosDocentes.txt", "docentesCantidadVotos.txt");
+
+            
+            remove("egresadosCantidadVotos.txt");
+            rename("auxiliarVotosEgresados.txt", "egresadosCantidadVotos.txt");
+
+        } else {
+            printf(AMARILLO_T "No es posible eliminar el candidato %s, debido a que ya ha recibido al menos un voto durante las votaciones\n" RESET_COLOR);
+            fclose(archivoCandidatos);
+            fclose(archivoVotos);
+            return;
+        }
+
+     }
+}
+
+void meterCantidadEstudiantes(char nombre[50], int numero){
+    FILE *archivoVotosEstudiantes = fopen("estudiantesCantidadVotos.txt", "r");
+    FILE *auxiliarEstudiantes = fopen("auxiliarEstudiantes.txt", "w");
+
+    if(archivoVotosEstudiantes == NULL){
+        printf(AMARILLO_T "No se ha podido abrir el archivo\n" RESET_COLOR);
+    }
+
+    char Archivo[50];
+    int numFichero;
+    int votos;
+
+    if(archivoVotosEstudiantes == NULL){
+        printf(AMARILLO_T "No se ha podido abrir el archivo\n" RESET_COLOR);
+        return;
+    }
+
+    int suma;
+    
+    fscanf(archivoVotosEstudiantes, "%d", &suma);
+    
+
+
+    fprintf(auxiliarEstudiantes, "%d\n", suma + 1);
+
+    for(int i = 0; i < suma; i++){
+        fscanf(archivoVotosEstudiantes, "%s %d %d", Archivo, &numFichero, &votos);
+        fprintf(auxiliarEstudiantes, "%s\n %d\n %d\n", Archivo, numFichero, votos);
+    }
+
+    fprintf(auxiliarEstudiantes, "%s %d\n %d", nombre, numero, 0);
+
+
+    fclose(auxiliarEstudiantes);
+    fclose(archivoVotosEstudiantes);
+
+    remove("estudiantesCantidadVotos.txt");
+    rename("auxiliarEstudiantes.txt", "estudiantesCantidadVotos.txt");
+}
+
+void meterCantidadAdministrativos(char nombre[50], int numero){
+    FILE *archivoVotosAdministrativos = fopen("administrativosCantidadVotos.txt", "r");
+    FILE *auxiliarAdministratrivos = fopen("auxiliarAdministrativos.txt", "w");
+
+    if(archivoVotosAdministrativos == NULL){
+        printf(AMARILLO_T "No se ha podido abrir el archivo\n" RESET_COLOR);
+    }
+
+    char Archivo[50];
+    int numFichero;
+    int votos;
+
+    if(archivoVotosAdministrativos == NULL){
+        printf(AMARILLO_T "No se ha podido abrir el archivo\n" RESET_COLOR);
+        return;
+    }
+
+    int suma;
+    
+    fscanf(archivoVotosAdministrativos, "%d", &suma);
+    
+
+
+    fprintf(auxiliarAdministratrivos, "%d\n", suma + 1);
+
+    for(int i = 0; i < suma; i++){
+        fscanf(archivoVotosAdministrativos, "%s %d %d", Archivo, &numFichero, &votos);
+        fprintf(auxiliarAdministratrivos, "%s\n %d\n %d\n", Archivo, numFichero, votos);
+    }
+
+    fprintf(auxiliarAdministratrivos, "%s %d\n %d", nombre, numero, 0);
+
+
+    fclose(auxiliarAdministratrivos);
+    fclose(archivoVotosAdministrativos);
+
+    remove("administrativosCantidadVotos.txt");
+    rename("auxiliarAdministrativos.txt", "administrativosCantidadVotos.txt");
+}
+
+void meterCantidadDocentes(char nombre[50], int numero){
+    FILE *archivoVotosDocentes = fopen("docentesCantidadVotos.txt", "r");
+    FILE *auxiliarDocentes = fopen("auxiliarDocentes.txt", "w");
+
+    if(archivoVotosDocentes == NULL){
+        printf(AMARILLO_T "No se ha podido abrir el archivo\n" RESET_COLOR);
+    }
+
+    char Archivo[50];
+    int numFichero;
+    int votos;
+
+    if(archivoVotosDocentes == NULL){
+        printf(AMARILLO_T "No se ha podido abrir el archivo\n" RESET_COLOR);
+        return;
+    }
+
+    int suma;
+    
+    fscanf(archivoVotosDocentes, "%d", &suma);
+    
+
+
+    fprintf(auxiliarDocentes, "%d\n", suma + 1);
+
+    for(int i = 0; i < suma; i++){
+        fscanf(archivoVotosDocentes, "%s %d %d", Archivo, &numFichero, &votos);
+        fprintf(auxiliarDocentes, "%s\n %d\n %d\n", Archivo, numFichero, votos);
+    }
+
+    fprintf(auxiliarDocentes, "%s %d\n %d", nombre, numero, 0);
+
+
+    fclose(auxiliarDocentes);
+    fclose(archivoVotosDocentes);
+
+    remove("docentesCantidadVotos.txt");
+    rename("auxiliarDocentes.txt", "docentesCantidadVotos.txt");
+}
+
+void meterCantidadEgresados(char nombre[50], int numero){
+    FILE *archivoVotosEgresados = fopen("egresadosCantidadVotos.txt", "r");
+    FILE *auxiliarEgresados = fopen("auxiliarEgresados.txt", "w");
+
+    if(archivoVotosEgresados == NULL){
+        printf(AMARILLO_T "No se ha podido abrir el archivo\n" RESET_COLOR);
+    }
+
+    char Archivo[50];
+    int numFichero;
+    int votos;
+
+    if(archivoVotosEgresados == NULL){
+        printf(AMARILLO_T "No se ha podido abrir el archivo\n" RESET_COLOR);
+        return;
+    }
+
+    int suma;
+    
+    fscanf(archivoVotosEgresados, "%d", &suma);
+    
+
+
+    fprintf(auxiliarEgresados, "%d\n", suma + 1);
+
+    for(int i = 0; i < suma; i++){
+        fscanf(archivoVotosEgresados, "%s %d %d", Archivo, &numFichero, &votos);
+        fprintf(auxiliarEgresados, "%s\n %d\n %d\n", Archivo, numFichero, votos);
+    }
+
+    fprintf(auxiliarEgresados, "%s %d\n %d", nombre, numero, 0);
+
+
+    fclose(auxiliarEgresados);
+    fclose(archivoVotosEgresados);
+
+    remove("egresadosCantidadVotos.txt");
+    rename("auxiliarEgresados.txt", "egresadosCantidadVotos.txt");
+}
+
+void resultadosVotosEstudiantes(int numeroVotacion){
+    FILE *archivoVotosEstudiantes = fopen("estudiantesCantidadVotos.txt", "r");
+    FILE *auxiliarEstudiantes = fopen("votosApoyoEstudiantes.txt", "w");
+
+    if(archivoVotosEstudiantes == NULL){
+        printf(AMARILLO_T "No se ha podido abrir el archivo\n" RESET_COLOR);
+    }
+
+    int suma;
+    char nombre[50];
+    int numero;
+    int votos;
+
+    fscanf(archivoVotosEstudiantes, "%d", &suma);
+
+    fprintf(auxiliarEstudiantes, "%d\n", suma);
+    for(int i = 0; i < suma; i++){
+        fscanf(archivoVotosEstudiantes, "%s %d %d", nombre, &numero, &votos);
+
+        if(numero == numeroVotacion){
+            fprintf(auxiliarEstudiantes, "%s\n %d\n %d\n", nombre, numero, votos + 1);
+        } else {
+            fprintf(auxiliarEstudiantes, "%s\n %d\n %d\n", nombre, numero, votos);
+        }
+    }
+
+    fclose(archivoVotosEstudiantes);
+    fclose(auxiliarEstudiantes);
+
+    remove("estudiantesCantidadVotos.txt");
+    rename("votosApoyoEstudiantes.txt", "estudiantesCantidadVotos.txt");
+
+}
+
+void resultadosVotosAdministrativos(int numeroVotacion){
+    FILE *archivoVotosAdministrativos = fopen("administrativosCantidadVotos.txt", "r");
+    FILE *auxiliarAdministratrivos = fopen("auxiliarAdministrativos.txt", "w");
+
+    if(archivoVotosAdministrativos == NULL){
+        printf(AMARILLO_T "No se ha podido abrir el archivo\n" RESET_COLOR);
+    }
+
+    int suma;
+    char nombre[50];
+    int numero;
+    int votos;
+
+    fscanf(archivoVotosAdministrativos, "%d", &suma);
+
+    fprintf(auxiliarAdministratrivos, "%d\n", suma);
+    for(int i = 0; i < suma; i++){
+        fscanf(archivoVotosAdministrativos, "%s %d %d", nombre, &numero, &votos);
+
+        if(numero == numeroVotacion){
+            fprintf(auxiliarAdministratrivos, "%s\n %d\n %d\n", nombre, numero, votos + 1);
+        } else {
+            fprintf(auxiliarAdministratrivos, "%s\n %d\n %d\n", nombre, numero, votos);
+        }
+    }
+
+    fclose(auxiliarAdministratrivos);
+    fclose(archivoVotosAdministrativos);
+
+    remove("administrativosCantidadVotos.txt");
+    rename("auxiliarAdministrativos.txt", "administrativosCantidadVotos.txt");
+
+}
+
+void resultadosVotosEgresados(int numeroVotacion){
+    FILE *archivoVotosEgresados = fopen("egresadosCantidadVotos.txt", "r");
+    FILE *auxiliarEgresados = fopen("auxiliarEgresados.txt", "w");
+
+    if(archivoVotosEgresados == NULL){
+        printf(AMARILLO_T "No se ha podido abrir el archivo\n" RESET_COLOR);
+    }
+
+    int suma;
+    char nombre[50];
+    int numero;
+    int votos;
+
+    fscanf(archivoVotosEgresados, "%d", &suma);
+
+    fprintf(auxiliarEgresados, "%d\n", suma);
+    for(int i = 0; i < suma; i++){
+        fscanf(archivoVotosEgresados, "%s %d %d", nombre, &numero, &votos);
+
+        if(numero == numeroVotacion){
+            fprintf(auxiliarEgresados, "%s\n %d\n %d\n", nombre, numero, votos + 1);
+        } else {
+            fprintf(auxiliarEgresados, "%s\n %d\n %d\n", nombre, numero, votos);
+        }
+    }
+
+    fclose(auxiliarEgresados);
+    fclose(archivoVotosEgresados);
+
+    remove("egresadosCantidadVotos.txt");
+    rename("auxiliarEgresados.txt", "egresadosCantidadVotos.txt");
+
+}
+
+void resultadosVotosDocentes(int numeroVotacion){
+    FILE *archivoVotosDocentes = fopen("docentesCantidadVotos.txt", "r");
+    FILE *auxiliarDocentes = fopen("auxiliarDocentes.txt", "w");
+
+    if(archivoVotosDocentes == NULL){
+        printf(AMARILLO_T "No se ha podido abrir el archivo\n" RESET_COLOR);
+    }
+
+    int suma;
+    char nombre[50];
+    int numero;
+    int votos;
+
+    fscanf(archivoVotosDocentes, "%d", &suma);
+
+    fprintf(auxiliarDocentes, "%d\n", suma);
+    for(int i = 0; i < suma; i++){
+        fscanf(archivoVotosDocentes, "%s %d %d", nombre, &numero, &votos);
+
+        if(numero == numeroVotacion){
+            fprintf(auxiliarDocentes, "%s\n %d\n %d\n", nombre, numero, votos + 1);
+        } else {
+            fprintf(auxiliarDocentes, "%s\n %d\n %d\n", nombre, numero, votos);
+        }
+    }
+
+    fclose(auxiliarDocentes);
+    fclose(archivoVotosDocentes);
+
+    remove("docentesCantidadVotos.txt");
+    rename("auxiliarDocentes.txt", "docentesCantidadVotos.txt");
+
+}
+void mostrarCandidatos(){
+    FILE *candidatos = fopen("Candidatos.txt", "r");
+
+    int suma;
+    char nombre[50];
+    char numero[50];
+    char organizacion[50];
+
+    if(candidatos == NULL) {
+        printf(AMARILLO_T "No hay candidatos para mostrar.\n" RESET_COLOR);
+        fclose(candidatos);
+        return;
+    }
+
+    fscanf(candidatos, "%d", &suma);
+    for(int i = 0; i < suma; i++){
+        fscanf(candidatos, "%s %s %s", nombre, numero, organizacion);
+        printf( ROJO_T "El candidato %s con el numero %s perteneciente a la organizacion %s\n" RESET_COLOR, nombre, numero, organizacion);
+    }
+    printf("\n");
+    fclose(candidatos);
+
+}
+
+// Función para registrar un elector
+void ingresarVotante() {   
+    char documentoIdentidad[50];
+    char nombre[50];
+    char categoria[50];
+    char tipoValidacion[50];
+    char linea[100]; 
+    int longitud;
+    int cantidadDeElectores, verificacion = 0;
+    char c;
+    int i;
+    char entrada[50];
+    
+    FILE* archivoElectores = fopen("Votantes.txt", "r+");
+    fscanf(archivoElectores, "%d", &cantidadDeElectores);
+    // printf("La suma de electores es de: %d\n", cantidadDeElectores);     
+
+    
+    printf(AZUL_T  "\nDigite el nombre completo del elector: " RESET_COLOR);
+    fgets(nombre, sizeof(nombre), stdin);
+
+    
+    printf(CYAN_T "Digite el numero de identificación del elector: " RESET_COLOR);
+    fgets(documentoIdentidad, sizeof(documentoIdentidad), stdin);
+
+
+
+    if(strlen(documentoIdentidad) - 1 < 7 || strlen(documentoIdentidad) > 10){
+        printf(CYAN_T "La suma de digitos ingresados como numero de identificacion no concuerdan con el formato que deben de tener.\n\n" RESET_COLOR);
+        return;
+    } 
+
+     for(int i = 0; i < strlen(documentoIdentidad) - 1; i++){
+        if(!isdigit(documentoIdentidad[i])) {
+            verificacion = 1;
+            break;  // Si encuentra un carácter no válido, salir del bucle
+        }
+    }
+
+    if(verificacion) {
+        printf(AMARILLO_T "El numero de identificacion debe contener solo digitos numericos.\n" RESET_COLOR);
+        return;
+    } 
+
+
+    printf(AZUL_T  "Digite que labor cumple ( ESTUDIANTE,EGRESADO,ADMINISTRATIVO O DOCENTE ): " RESET_COLOR);
+    fgets(categoria, sizeof(categoria), stdin);
+    
+    longitud = strlen(categoria) - 1;
+
+
+    for(int i = 0; i < longitud; i++){
+        tipoValidacion[i] = tolower(categoria[i]);
+    }
+
+    
+
+    tipoValidacion[strlen(categoria) - 1] = '\0';
+
+    if(strcmp(tipoValidacion, "estudiante") != 0 && 
+       strcmp(tipoValidacion, "docente") != 0 && 
+       strcmp(tipoValidacion, "administrativo") != 0 && 
+       strcmp(tipoValidacion, "egresado") != 0){
+        printf( ROJO_T "Rol inexistente\n");
+        return;
+    }
+
+    
+    
+    
+    FILE* archivoApoyo = fopen("Apoyo.txt", "w");
+
+    
+
+    
+    
+    if (archivoElectores != NULL && archivoApoyo != NULL) {
+        // Leer la suma actual de electores
+        
+
+        // Verificar si el elector ya ha sido registrado
+        rewind(archivoElectores);  // Regresar al inicio del archivo
+        int electorRegistrado = 0;
+
+        while (fgets(linea, sizeof(linea), archivoElectores) != NULL) {
+            if (strstr(linea, documentoIdentidad) != NULL) {
+                printf(MAGENTA_T "El elector ya ha sido registrado con anterioridad\n" RESET_COLOR);
+                electorRegistrado = 1;
+                break;
+            }
+        }
+
+        // Si no está registrado, lo registra
+        if (!electorRegistrado) {
+            fprintf(archivoElectores, "%s %s %s %s\n", nombre, categoria, documentoIdentidad, "FALSO");
+            printf(AZUL_T  "Votante registrado exitosamente\n\n" RESET_COLOR);
+            cantidadDeElectores++;
+
+            // Actualizar la suma de electores en el archivo
+            rewind(archivoElectores);
+            fprintf(archivoElectores, "%d\n", cantidadDeElectores);
+      
+        }
+
+        // Copiar el contenido del archivo Electores a Apoyo
+            rewind(archivoElectores);
+            while (fgets(linea, sizeof(linea), archivoElectores) != NULL) {
+                fprintf(archivoApoyo, "%s", linea);
+            }
+
+
+        fclose(archivoApoyo);
+        fclose(archivoElectores);
+
+        remove("Votantes.txt");
+        rename("Apoyo.txt", "Votantes.txt");
+
+    } else {
+        printf(AMARILLO_T "Error al abrir el archivo\n\n" RESET_COLOR);
+    }
+}
+
+void organizarVotos(char nombre[50], int numero){
+    FILE *archivoVotos = fopen("Votos.txt", "r+");
+    FILE *auxiliarVotos = fopen("auxiliarVotos.txt", "w");
+
+    char Archivo[50];
+    int numFichero;
+    int votos;
+
+    if(archivoVotos == NULL){
+        printf(AMARILLO_T "No se ha podido abrir el archivo\n" RESET_COLOR);
+        return;
+    }
+
+    int suma;
+    
+    fscanf(archivoVotos, "%d", &suma);
+    
+
+
+    fprintf(auxiliarVotos, "%d\n", suma + 1);
+
+    for(int i = 0; i < suma; i++){
+        fscanf(archivoVotos, "%s %d %d", Archivo, &numFichero, &votos);
+        fprintf(auxiliarVotos, "%s\n %d\n %d\n", Archivo, numFichero, votos);
+    }
+
+    fprintf(auxiliarVotos, "%s %d\n %d", nombre, numero, 0);
+
+
+    fclose(auxiliarVotos);
+    fclose(archivoVotos);
+
+    remove("Votos.txt");
+    rename("auxiliarVotos.txt", "Votos.txt");
+}
+// Función para registrar un candidato
+void registrarCandidato() {
+    char nombre[50];
+    int numero = 0;
+    char organizacion[50];
+
+    char Archivo[50];
+    int numFichero;
+    char organizacionArchivo[50];
+
+    char linea[100];
+    int suma = 0; // Inicializar la suma a 0
+    int verificacion;
+
+    FILE* archivoCandidatos = fopen("Candidatos.txt", "r+");
+    FILE* ApoyoCandidatos = fopen("ApoyoCandidatos.txt", "w");
+
+    if (archivoCandidatos != NULL && ApoyoCandidatos != NULL) {
+        // Leer la suma de candidatos existentes
+        fscanf(archivoCandidatos, "%d", &suma);
+
+        if(suma == 6){
+            printf( ROJO_T "Ha alcanzado el limite de los candidatos a la rectoria de la Universidad Tecnologica de Pereira\n" RESET_COLOR);
+            fclose(archivoCandidatos);
+            fclose(ApoyoCandidatos);
+            return;
+        }
+
+        printf(CYAN_T "Digite el nombre del candidato: ");
+        fgets(nombre, sizeof(nombre), stdin);
+        
+
+        for (int i = 0; i < suma; i++) {
+            fscanf(archivoCandidatos, "%s %d %s", linea, &numero, organizacion);
+
+            if (strcmp(linea, nombre) == 0) {
+                printf( ROJO_T "El nombre ingresado coincide con el nombre de otro candidato, ¿Hay mas de un candidato con el mismo nombre? (Si: 1 / No: 0): " RESET_COLOR);
+                scanf("%d", &verificacion);
+                getchar();
+
+                if (verificacion == 0) {
+                    printf(VERDE_T"Sera redireccionado al menu\n" RESET_COLOR);
+                    fclose(ApoyoCandidatos);
+                    fclose(archivoCandidatos);
+                    return;
+                } else if (verificacion == 1) {
+                    printf(VERDE_T"Continue con el proceso\n" RESET_COLOR);
+                } else {
+                    printf( ROJO_T "Numero ingresado inexistente, intente de nuevo\n" RESET_COLOR);
+                }
+            }
+        }
+        
+
+        rewind(archivoCandidatos);
+        fscanf(archivoCandidatos, "%d", &suma);
+        fscanf(archivoCandidatos, "%s %d %s", linea, &numero, organizacion);
+
+        int numMayor = numero, nuevoNumero;
+
+        for(int i = 0; i < suma; i++){
+            fscanf(archivoCandidatos, "%s %d %s", linea, &numero, organizacion);
+            if(numero >= numMayor){
+                numMayor = numero;
+            }
+        }
+        
+
+        nuevoNumero = numMayor + 1;
+        
+
+        
+
+
+        printf(AZUL_T  "Digite el nombre de la organizacion a la que pertenece el candidato: " RESET_COLOR);
+        fgets(organizacion, sizeof(organizacion), stdin);
+
+        rewind(archivoCandidatos);
+        fscanf(archivoCandidatos, "%d", &suma);
+
+        fprintf(ApoyoCandidatos, "%d\n", suma + 1);
+
+        
+            for(int i = 0; i < suma; i++){
+                fscanf(archivoCandidatos, "%s %d %s", Archivo, &numFichero, organizacionArchivo);
+                fprintf(ApoyoCandidatos, "%s\n %d\n %s\n", Archivo, numFichero, organizacionArchivo);
+            }
+
+        fprintf(ApoyoCandidatos, "%s %d\n %s", nombre, nuevoNumero, organizacion);
+        organizarVotos(nombre, nuevoNumero);
+        meterCantidadEstudiantes(nombre, nuevoNumero);
+        meterCantidadAdministrativos(nombre, nuevoNumero);
+        meterCantidadDocentes(nombre, nuevoNumero);
+        meterCantidadEgresados(nombre, nuevoNumero);
+
+        fclose(ApoyoCandidatos);
+        fclose(archivoCandidatos);
+
+        remove("Candidatos.txt");
+        rename("ApoyoCandidatos.txt", "Candidatos.txt");
+
+    } else {
+        printf(AMARILLO_T "Error al abrir el archivo\n\n" RESET_COLOR);
+    }
+}
+// Función para registrar una organización política
+void registrarOrganizacionPolitica() {
+// Implementa el registro de una organización política en el sistema
+}
+// Función para emitir un voto
+
+void emitirVoto() {
+// Implementa el proceso de emisión de un voto
+FILE *archivoVotos = fopen("Votos.txt", "r");
+FILE *archivoElectores = fopen("Votantes.txt", "r");
+FILE *archivoCandidatos = fopen("Candidatos.txt", "r");
+
+if(archivoElectores == NULL || archivoVotos == NULL || archivoCandidatos == NULL){
+    printf(AMARILLO_T "El archivo no se ha podido abrir\n" RESET_COLOR);
+    fclose(archivoElectores);
+    fclose(archivoVotos);
+    return;
+}
+
+bool permitido = false;
+char numIdentificacion[50];
+char nombre[50];
+char categoria[50];
+char condicion[50];
+char identificacionArchivo[50];
+int suma;
+
+//Variables para efectuar la votacion
+char numVotacion;
+char candidato[50];
+int numeroVotacion;
+char organizacion[50];
+char numeroCandidato;
+bool candidatoEncontrado = false;
+
+char nombreCandidato2[50];
+int numeroCandidato2;
+int votos;
+char verificacion;
+
+char nombre2[50];
+char tipo2[50];
+char identificacionArchivo2[50];
+char estado2[50];
+
+printf(CYAN_T "Digite su numero de identificacion, el programa identificara si puede votar o no: " RESET_COLOR);
+fgets(numIdentificacion, sizeof(numIdentificacion), stdin);
+numIdentificacion[strcspn(numIdentificacion, "\n")] = '\0';
+
+
+fscanf(archivoElectores, "%d", &suma);
+
+
+for(int i = 0; i < suma; i++){
+    fscanf(archivoElectores, "%s %s %s %s", nombre, categoria, identificacionArchivo, condicion);
+    if(strcmp(numIdentificacion, identificacionArchivo) == 0){
+        permitido = true;
+        break;
+    } 
+}
+
+if(permitido == false){
+    printf( ROJO_T "Su numero de identificacion no se ha encontrado en los registros, por lo tanto, usted no tiene permitido votar\n" RESET_COLOR);
+
+    fclose(archivoCandidatos);
+    fclose(archivoVotos);
+    fclose(archivoElectores);
+
+
+} else if (strcmp(condicion, "FALSO") == 0) {
+
+    mostrarCandidatos();
+    printf(AZUL_T  "\nTiene permitido votar, digite el numero correspondiente al partido de la persona que desea votar: " RESET_COLOR);
+    scanf("%d", &numVotacion);
+
+    fscanf(archivoCandidatos, "%d", &suma);
+    getchar();
+
+    for(int i = 0; i < suma; i++){
+        fscanf(archivoCandidatos, "%s %d %s", candidato, &numeroVotacion, organizacion);
+        
+        
+        if(numeroVotacion == numVotacion){
+            candidatoEncontrado = true;
+            break;
+        }
+        
+    }
+
+    if(candidatoEncontrado){
+        printf(AMARILLO_T "El candidato con el numero %d es %s perteneciente a la organizacion %s\n",  numeroVotacion, candidato, organizacion);
+        printf("Digite 1 para confirmar que ese el candidato por el que desea votar: " RESET_COLOR);
+        scanf("%c", &verificacion);
+
+
+        
+
+        if(verificacion == '1'){
+
+        FILE *auxiliarVotos = fopen("auxiliarVotos.txt", "w");
+        FILE *auxiliarVotantes = fopen("auxiliarVotantes.txt", "w");
+        FILE *tipoVoto = fopen("TipoVoto.txt", "r");
+        FILE *auxiliarTipoVoto = fopen("auxiliarTipoVoto.txt", "w");
+
+        fscanf(archivoVotos, "%d", &suma);
+
+        fprintf(auxiliarVotos, "%d\n", suma);
+
+
+        
+
+        for(int i = 0; i < suma; i++){
+            fscanf(archivoVotos, "%s %d %d", nombreCandidato2, &numeroCandidato2, &votos);
+
+            if(strcmp(nombreCandidato2, candidato) == 0){
+                fprintf(auxiliarVotos, "%s\n %d\n %d\n", nombreCandidato2, numeroCandidato2, votos + 1);
+            } else {
+                fprintf(auxiliarVotos, "%s\n %d\n %d\n", nombreCandidato2, numeroCandidato2, votos);
+            }
+        }
+
+        printf(MAGENTA_T "El voto se ha realizado\n" RESET_COLOR);
+
+        //Cambiar el condicion de votacion del usuario
+        fclose(archivoElectores);
+
+        FILE *archivoElectores = fopen("Votantes.txt", "r");
+        fscanf(archivoElectores, "%d", &suma);
+
+        fprintf(auxiliarVotantes, "%d\n", suma);
+
+        //ORGANIZAR LA CANTIDAD DE VOTOS POR ROL DEL ELECTOR (ADMINISTRATIVO, ESTUDIANTE...)
+        char rolVotante[50];
+        int sumaVotos;
+
+        for(int i = 0; i < 4; i++){
+            fscanf(tipoVoto, "%s %d", rolVotante, &sumaVotos);
+
+            if(strcmp(rolVotante, categoria) == 0){
+                fprintf(auxiliarTipoVoto, "%s\n%d\n", rolVotante, sumaVotos + 1);
+            } else {
+                fprintf(auxiliarTipoVoto, "%s\n%d\n", rolVotante, sumaVotos);
+            }
+        }
+
+        if(strcmp(categoria, "ESTUDIANTE") == 0){
+            resultadosVotosEstudiantes(numeroVotacion);
+        } else if(strcmp(categoria, "ADMINISTRATIVO") == 0){
+            resultadosVotosAdministrativos(numeroVotacion);
+        } else if(strcmp(categoria, "DOCENTE") == 0){
+            resultadosVotosDocentes(numeroVotacion);
+        } else {
+            resultadosVotosEgresados(numeroVotacion);
+        }
+
+        
+
+        for(int i = 0; i < suma; i++){
+            fscanf(archivoElectores, "%s %s %s %s", nombre2, tipo2, identificacionArchivo2, estado2);
+
+            if(strcmp(identificacionArchivo, identificacionArchivo2) == 0){
+                fprintf(auxiliarVotantes, "%s\n %s\n %s\n %s\n", nombre2, tipo2, identificacionArchivo2, "VERDADERO");
+            } else {
+                fprintf(auxiliarVotantes, "%s\n %s\n %s\n %s\n", nombre2, tipo2, identificacionArchivo2, estado2);
+            }
+        }
+
+        fclose(archivoCandidatos);
+        fclose(auxiliarVotantes);
+        fclose(auxiliarVotos);
+        fclose(archivoVotos);
+        fclose(archivoElectores);
+        fclose(auxiliarTipoVoto);
+        fclose(tipoVoto);
+
+        remove("Votos.txt");
+        rename("auxiliarVotos.txt", "Votos.txt");
+
+        remove("TipoVoto.txt");
+        rename("auxiliarTipoVoto.txt", "TipoVoto.txt");
+
+        remove("Votantes.txt");
+        rename("auxiliarVotantes.txt", "Votantes.txt");
+    
+        } else {
+            printf("Volviendo al menu\n");
+            fclose(archivoCandidatos);
+            fclose(archivoVotos);
+            fclose(archivoElectores);
+           
+
+            remove("Votos.txt");
+            rename("auxiliarVotos.txt", "Votos.txt");
+
+            remove("Votantes.txt");
+            rename("auxiliarVotantes.txt", "Votantes.txt");
+            return;
+        }
+
+
+    
+
+    } else {
+        printf( ROJO_T "El numero ingresado no corresponde a ningun candidato, a continuacion se le mostraran los candidatos posibles a votar:\n" RESET_COLOR);
+        mostrarCandidatos();
+        fclose(archivoCandidatos);
+        fclose(archivoVotos);
+        fclose(archivoElectores);
+    }
+    
+    
+
+} else {
+    printf(AZUL_T  "Usted ya ha votado con anterioridad, no tiene permitido votar de nuevo\n" RESET_COLOR);
+    fclose(archivoCandidatos);
+    fclose(archivoVotos);
+    fclose(archivoElectores);
+}
+
+}
+
+
+void rellenarTernado(float votosMayores[]){
+
+    FILE *archivoResultados = fopen("resultadosGenerales.txt", "r");
+    FILE *archivoTernado = fopen("ternado.txt", "w");
+    FILE *archivoVotosConsejoEstudiantil = fopen("votosConsejo.txt", "w");
+
+    int cantidadDeCandidatos, k = 0;
+    char candidato[50];
+    int numeroCandidato;
+    float porcentaje;
+
+    
+    
+    fscanf(archivoResultados, "%d", &cantidadDeCandidatos);
+    fprintf(archivoTernado, "%d\n", 3);
+    fprintf(archivoVotosConsejoEstudiantil, "%d\n", 3);
+
+
+    for (int i = 0; i < cantidadDeCandidatos; i++) {
+            fscanf(archivoResultados, "%s %d %f", candidato, &numeroCandidato, &porcentaje);
+
+
+            if (fabs(porcentaje - votosMayores[k]) < 0.0001) {
+                fprintf(archivoTernado, "%s\n %d\n %f\n", candidato, numeroCandidato, votosMayores[k]);
+                fprintf(archivoVotosConsejoEstudiantil, "%s\n %d\n%d\n", candidato, numeroCandidato, 0);
+                k++;
+                rewind(archivoResultados);
+                fscanf(archivoResultados, "%d", &cantidadDeCandidatos);
+                i = 0;
+            }
+
+            if(k == 3){
+                break;
+            }
+}
+
+fclose(archivoVotosConsejoEstudiantil);
+fclose(archivoResultados);
+fclose(archivoTernado);
+}
+
+int resultadosGeneral(){
+    FILE *archivoVotos = fopen("Votos.txt", "r");
+    FILE *archivoVotosEstudiantes = fopen("estudiantesCantidadVotos.txt", "r");
+    FILE *archivoVotosAdministrativos = fopen("administrativosCantidadVotos.txt", "r");
+    FILE *archivoVotosEgresados = fopen("egresadosCantidadVotos.txt", "r");
+    FILE *archivoVotosDocentes = fopen("docentesCantidadVotos.txt", "r");
+    FILE *archivoResultados = fopen("resultadosGenerales.txt", "w");
+
+    int cantidadDeCandidatos;
+    char candidato[50];
+    int numeroCandidato, contador;
+    float votos, sumaTotal = 0.0, cantidadDeVotos = 0.0;
+    float cantidadDeVotosEstudiantes = 0.0, cantidadDeVotosEgresados = 0.0, cantidadDeVotosAdministrativos = 0.0, cantidadDeVotosDocentes = 0.0;  
+    
+    float porcentajeVotos[5], tem;
+  
+
+    fscanf(archivoVotos, "%d", &cantidadDeCandidatos);
+    fscanf(archivoVotosAdministrativos, "%d", &cantidadDeCandidatos);
+    fscanf(archivoVotosDocentes, "%d", &cantidadDeCandidatos);
+    fscanf(archivoVotosEstudiantes, "%d", &cantidadDeCandidatos);
+    fscanf(archivoVotosEgresados, "%d", &cantidadDeCandidatos);
+
+    fprintf(archivoResultados, "%d\n", cantidadDeCandidatos);
+        
+
+    for(int i = 0; i < cantidadDeCandidatos; i++){
+
+        fscanf(archivoVotosEstudiantes, "%s %d %f", candidato, &numeroCandidato, &votos);
+        cantidadDeVotosEstudiantes += votos;
+
+        fscanf(archivoVotosAdministrativos, "%s %d %f", candidato, &numeroCandidato, &votos);
+        cantidadDeVotosAdministrativos += votos;
+
+        fscanf(archivoVotosDocentes, "%s %d %f", candidato, &numeroCandidato, &votos);
+        cantidadDeVotosDocentes += votos;
+
+        fscanf(archivoVotosEgresados, "%s %d %f", candidato, &numeroCandidato, &votos);
+        cantidadDeVotosEgresados += votos;
+
+        fscanf(archivoVotos, "%s %d %f", candidato, &numeroCandidato, &votos);
+        cantidadDeVotos += votos;
+    }
+
+    printf(AZUL_T  "La suma total de votos es de %f\n" RESET_COLOR, cantidadDeVotos);
+
+    rewind(archivoVotosEstudiantes);
+    rewind(archivoVotosDocentes);
+    rewind(archivoVotosAdministrativos);
+    rewind(archivoVotosEgresados);
+
+    fscanf(archivoVotos, "%d", &cantidadDeCandidatos);
+    fscanf(archivoVotosAdministrativos, "%d", &cantidadDeCandidatos);
+    fscanf(archivoVotosDocentes, "%d", &cantidadDeCandidatos);
+    fscanf(archivoVotosEstudiantes, "%d", &cantidadDeCandidatos);
+    fscanf(archivoVotosEgresados, "%d", &cantidadDeCandidatos);
+
+
+        for(int i = 0; i < cantidadDeCandidatos; i++){
+
+        sumaTotal = 0;
+        fscanf(archivoVotosEstudiantes, "%s %d %f", candidato, &numeroCandidato, &votos);
+        sumaTotal += (votos/cantidadDeVotosEstudiantes) * 0.35;
+        
+
+        fscanf(archivoVotosDocentes, "%s %d %f", candidato, &numeroCandidato, &votos);
+        sumaTotal += (votos/cantidadDeVotosDocentes) * 0.4;
+
+        fscanf(archivoVotosEgresados, "%s %d %f", candidato, &numeroCandidato, &votos);
+        sumaTotal +=  (votos/cantidadDeVotosEgresados) * 0.15;
+
+        fscanf(archivoVotosAdministrativos, "%s %d %f", candidato, &numeroCandidato, &votos);
+        sumaTotal +=  (votos/cantidadDeVotosAdministrativos) * 0.10;
+        porcentajeVotos[i] = sumaTotal;
+
+        fprintf(archivoResultados, "%s\n %d\n %f\n", candidato, numeroCandidato, sumaTotal);
+        }
+
+        for(int i = 0; i < cantidadDeCandidatos; i++){
+                    
+                    for(int j = i + 1; j < cantidadDeCandidatos; j++){
+                        if(porcentajeVotos[i] < porcentajeVotos[j]){
+                            
+                            tem = porcentajeVotos[i];
+                            porcentajeVotos[i] = porcentajeVotos[j];
+                            porcentajeVotos[j] = tem;
+                        }
+                    }
+                    
+                }
+
+        
+
+        float votosMayores[3];
+        for(int i = 0; i < 3; i++){
+            votosMayores[i] = porcentajeVotos[i];
+        }
+
+
+        fclose(archivoVotosAdministrativos);
+        fclose(archivoVotosDocentes);
+        fclose(archivoVotosEgresados);
+        fclose(archivoVotos);
+        fclose(archivoVotosEstudiantes);
+        fclose(archivoResultados);
+
+        rellenarTernado(votosMayores);
+        
+
+    return cantidadDeVotos;
+}
+
+
+void histogramaResultados(int cantidadDeVotos) {
+    int numMaximo = 100 / 5;
+
+    int numCandidato[5];
+    float votosPorcentaje[5];  // Cambiado el nombre para evitar la confusión
+    char candidato[50];
+
+    FILE *archivoResultados = fopen("resultadosGenerales.txt", "r");
+
+    int cantidadDeCandidatos;
+
+    fscanf(archivoResultados, "%d", &cantidadDeCandidatos);
+
+    for (int i = 0; i < cantidadDeCandidatos; i++) {
+        fscanf(archivoResultados, "%s %d %f", candidato, &numCandidato[i], &votosPorcentaje[i]);
+        votosPorcentaje[i] = (votosPorcentaje[i] * 100) / 5;  // Corregido el nombre de la variable
+        // printf("La suma de votos del candidato %s son %.2f\n", candidato, votosPorcentaje[i]);
+    }
+
+    float numMayor = votosPorcentaje[0];
+    int cantidadDeEspacios[5];
+
+    for(int i = 0; i < cantidadDeCandidatos; i++){
+        if(votosPorcentaje[i] >= numMayor){
+            numMayor = i;
+        }
+
+        cantidadDeEspacios[i] = numMaximo - votosPorcentaje[i];
+    }
+
+    // for(int i = 0; i < 6; i++){
+    //     printf("La suma de espacios de [%d] son %d\n", i, cantidadDeEspacios[i]);
+    // }
+
+    printf(CYAN_T "\n\nEl histograma general resultante de las votaciones es el siguiente:\n" RESET_COLOR);
+
+    for(int i = 0; i < 20; i++){
+        printf(MAGENTA_T "-------------------------------------\n" RESET_COLOR);
+        for(int j = 0; j < cantidadDeCandidatos; j++){
+
+            if(cantidadDeEspacios[j] == 0){
+                printf("|  *  ");
+            } else if(cantidadDeEspacios[j] == 1 && votosPorcentaje[j] != 0){
+                printf("| %.1f", votosPorcentaje[j] * 5);
+                cantidadDeEspacios[j]--;
+            } else if(votosPorcentaje[j] == 0 && cantidadDeEspacios[j] == 1){
+                printf("|  %d  ", votosPorcentaje[j]);
+            } else {
+                printf("|     ");
+                cantidadDeEspacios[j]--;
+            }
+        }
+        printf("|\n");
+    }
+
+    printf(MAGENTA_T "-------------------------------------\n" RESET_COLOR);
+    for(int i = 0; i < cantidadDeCandidatos; i++){
+        printf("|  %d  ", numCandidato[i]);
+    }
+    printf(MAGENTA_T "|\n-------------------------------------\n" RESET_COLOR);
+    
+
+    fclose(archivoResultados);
+}
+
+void tablaEstudiantes() {
+    FILE *archivoVotosEstudiantes = fopen("estudiantesCantidadVotos.txt", "r");
+    FILE *archivoElectores = fopen("Votantes.txt", "r");
+
+    int cantidadDeCandidatos, cantidadDeVotos = 0, numMaximo = 100 / 5;
+    int numCandidato[5];
+    int votos[5];
+    char candidato[50];
+
+    fscanf(archivoVotosEstudiantes, "%d", &cantidadDeCandidatos);
+
+    for (int i = 0; i < cantidadDeCandidatos; i++) {
+        fscanf(archivoVotosEstudiantes, "%s %d %d", candidato, &numCandidato[i], &votos[i]);
+        cantidadDeVotos += votos[i];
+    }
+
+    int cantidadElectores, potencialElectoral = 0;
+    char nommbreElector[50];
+    char categoria[50];
+    char identificacion[50];
+    char condicion[50];
+    fscanf(archivoElectores, "%d", &cantidadElectores);
+
+    for(int i = 0; i < cantidadElectores; i++){
+        fscanf(archivoElectores, "%s %s %s %s", nommbreElector, categoria, identificacion, condicion);
+        if(strcmp(categoria, "ESTUDIANTE") == 0){
+            potencialElectoral++;
+        }
+    }
+
+    float porcentajeDeParticipacion;
+
+    porcentajeDeParticipacion = ((float) cantidadDeVotos * 100 ) / (float) potencialElectoral;
+    
+
+    float porcentajeVotos[5];
+    for (int i = 0; i < cantidadDeCandidatos; i++) {
+        porcentajeVotos[i] = ((float)votos[i] / cantidadDeVotos) * 100 ;
+    }
+
+    printf("CATEGORIA: ESTUDIANTES\n");
+    printf("-------------------------------------------------\n");
+    printf("|\tCANDIDATO\tVOTOS\t\t%%\t|\n");
+    rewind(archivoVotosEstudiantes);
+    fscanf(archivoVotosEstudiantes, "%d", &cantidadDeCandidatos);
+    for(int i = 0; i < cantidadDeCandidatos; i++){
+        
+    printf("-------------------------------------------------\n");
+        fscanf(archivoVotosEstudiantes, "%s %d %d", nommbreElector, &numCandidato[i], &votos[i]);
+        printf("|\t%d.%s\t  %d\t\t%.2f\t|\n", numCandidato[i], nommbreElector, votos[i], porcentajeVotos[i]);
+    }
+   printf("-------------------------------------------------\n");
+
+    printf("Cantidad de votos realizados: %d\n", cantidadDeVotos);
+    printf("Potencial electoral: %d\n", potencialElectoral);
+    printf("Porcentaje de participacion: %.2f\n", porcentajeDeParticipacion);
+    printf("Porcentaje de abstencion: %.2f\n", 100.0 - porcentajeDeParticipacion);
+
+   
+
+    fclose(archivoVotosEstudiantes);
+    fclose(archivoElectores);
+}
+
+
+void tablaEgresados() {
+    FILE *archivoVotosEgresados = fopen("egresadosCantidadVotos.txt", "r");
+    FILE *archivoElectores = fopen("Votantes.txt", "r");
+
+    int cantidadDeCandidatos, cantidadDeVotos = 0, numMaximo = 100 / 5;
+    int numCandidato[5];
+    int votos[5];
+    char candidato[50];
+
+    fscanf(archivoVotosEgresados, "%d", &cantidadDeCandidatos);
+
+    for (int i = 0; i < cantidadDeCandidatos; i++) {
+        fscanf(archivoVotosEgresados, "%s %d %d", candidato, &numCandidato[i], &votos[i]);
+        cantidadDeVotos += votos[i];
+    }
+
+    int cantidadElectores, potencialElectoral = 0;
+    char nommbreElector[50];
+    char categoria[50];
+    char identificacion[50];
+    char condicion[50];
+    fscanf(archivoElectores, "%d", &cantidadElectores);
+
+    for(int i = 0; i < cantidadElectores; i++){
+        fscanf(archivoElectores, "%s %s %s %s", nommbreElector, categoria, identificacion, condicion);
+        if(strcmp(categoria, "EGRESADO") == 0){
+            potencialElectoral++;
+        }
+    }
+
+
+
+float porcentajeDeParticipacion;
+
+if (potencialElectoral != 0) {
+    porcentajeDeParticipacion = ((float) cantidadDeVotos * 100 ) / (float) potencialElectoral;
+    printf("Porcentaje de participacion: %.2f%%\n", porcentajeDeParticipacion);
+} else {
+    printf("No hay electores de la categoría 'EGRESADO', por lo tanto, no se puede calcular el porcentaje de participacion.\n");
+}
+
+// ... (resto del código)
+
+    
+
+
+
+    float porcentajeVotos[5];
+    for (int i = 0; i < cantidadDeCandidatos; i++) {
+        porcentajeVotos[i] = ((float)votos[i] / cantidadDeVotos) * 100;
+    }
+
+   printf(AMARILLO_T "CATEGORIA: EGRESADOS\n" RESET_COLOR);
+    printf(VERDE_T"-------------------------------------------------\n" RESET_COLOR);
+    printf(VERDE_T"|\tCANDIDATO\tVOTOS\t\t%%\t|\n" RESET_COLOR);
+    rewind(archivoVotosEgresados);
+    fscanf(archivoVotosEgresados, "%d", &cantidadDeCandidatos);
+    for(int i = 0; i < cantidadDeCandidatos; i++){
+        
+    printf(VERDE_T"-------------------------------------------------\n" RESET_COLOR);
+        fscanf(archivoVotosEgresados, "%s %d %d", nommbreElector, &numCandidato[i], &votos[i]);
+        printf("|\t%d.%s\t  %d\t\t%.2f\t|\n", numCandidato[i], nommbreElector, votos[i], porcentajeVotos[i]);
+    }
+   printf(VERDE_T"-------------------------------------------------\n" RESET_COLOR);
+
+    printf(CYAN_T "Cantidad de votos realizados: %d\n" RESET_COLOR, cantidadDeVotos);
+    printf("Potencial electoral: %d\n", potencialElectoral);
+    printf("Porcentaje de participacion: %.2f\n", porcentajeDeParticipacion);
+    printf("Porcentaje de abstencion: %.2f\n" RESET_COLOR, 100.0 - porcentajeDeParticipacion);
+
+    fclose(archivoVotosEgresados);
+    fclose(archivoElectores);
+}
+
+
+void tablaAdministrativos() {
+    FILE *archivoVotosAdministrativos = fopen("administrativosCantidadVotos.txt", "r");
+    FILE *archivoElectores = fopen("Votantes.txt", "r");
+
+    int cantidadDeCandidatos, cantidadDeVotos = 0;
+    int numCandidato[5];
+    int votos[5];
+    char candidato[50];
+
+    fscanf(archivoVotosAdministrativos, "%d", &cantidadDeCandidatos);
+
+    for (int i = 0; i < cantidadDeCandidatos; i++) {
+        fscanf(archivoVotosAdministrativos, "%s %d %d", candidato, &numCandidato[i], &votos[i]);
+        cantidadDeVotos += votos[i];
+    }
+
+    int cantidadElectores, potencialElectoral = 0;
+    char nommbreElector[50];
+    char categoria[50];
+    char identificacion[50];
+    char condicion[50];
+    fscanf(archivoElectores, "%d", &cantidadElectores);
+
+    for(int i = 0; i < cantidadElectores; i++){
+        fscanf(archivoElectores, "%s %s %s %s", nommbreElector, categoria, identificacion, condicion);
+        if(strcmp(categoria, "ADMINISTRATIVO") == 0){
+            potencialElectoral++;
+        }
+    }
+
+    float porcentajeDeParticipacion;
+
+    porcentajeDeParticipacion = ((float) cantidadDeVotos * 100 ) / (float) potencialElectoral;
+    
+
+    float porcentajeVotos[5];
+    for (int i = 0; i < cantidadDeCandidatos; i++) {
+        porcentajeVotos[i] = ((float)votos[i] / cantidadDeVotos) * 100;
+    }
+
+
+
+    printf(AMARILLO_T "CATEGORIA: ADMINISTRATIVOS\n" RESET_COLOR);
+    printf(VERDE_T"-------------------------------------------------\n" RESET_COLOR);
+    printf(VERDE_T"|\tCANDIDATO\tVOTOS\t\t%%\t|\n" RESET_COLOR);
+    rewind(archivoVotosAdministrativos);
+    fscanf(archivoVotosAdministrativos, "%d", &cantidadDeCandidatos);
+    for(int i = 0; i < cantidadDeCandidatos; i++){
+        
+    printf(VERDE_T"-------------------------------------------------\n" RESET_COLOR);
+        fscanf(archivoVotosAdministrativos, "%s %d %d", nommbreElector, &numCandidato[i], &votos[i]);
+        printf("|\t%d.%s\t  %d\t\t%.2f\t|\n", numCandidato[i], nommbreElector, votos[i], porcentajeVotos[i]);
+    }
+   printf(VERDE_T"-------------------------------------------------\n" RESET_COLOR);
+
+    printf(CYAN_T "Cantidad de votos realizados: %d\n" RESET_COLOR, cantidadDeVotos);
+    printf("Potencial electoral: %d\n", potencialElectoral);
+    printf("Porcentaje de participacion: %.2f\n", porcentajeDeParticipacion);
+    printf("Porcentaje de abstencion: %.2f\n" RESET_COLOR, 100.0 - porcentajeDeParticipacion);
+    
+
+    fclose(archivoVotosAdministrativos);
+    fclose(archivoElectores);
+}
+
+
+void tablaDocentes() {
+    FILE *archivoVotosDocentes = fopen("docentesCantidadVotos.txt", "r");
+    FILE *archivoElectores = fopen("Votantes.txt", "r");
+
+    int cantidadDeCandidatos, cantidadDeVotos = 0, numMaximo = 100 / 5;
+    int numCandidato[5];
+    int votos[5];
+    char candidato[50];
+
+    fscanf(archivoVotosDocentes, "%d", &cantidadDeCandidatos);
+
+    for (int i = 0; i < cantidadDeCandidatos; i++) {
+        fscanf(archivoVotosDocentes, "%s %d %d", candidato, &numCandidato[i], &votos[i]);
+        cantidadDeVotos += votos[i];
+    }
+
+    int cantidadElectores, potencialElectoral = 0;
+    char nommbreElector[50];
+    char categoria[50];
+    char identificacion[50];
+    char condicion[50];
+    fscanf(archivoElectores, "%d", &cantidadElectores);
+
+    for(int i = 0; i < cantidadElectores; i++){
+        fscanf(archivoElectores, "%s %s %s %s", nommbreElector, categoria, identificacion, condicion);
+        if(strcmp(categoria, "DOCENTE") == 0){
+            potencialElectoral++;
+        }
+    }
+
+    float porcentajeDeParticipacion;
+
+    porcentajeDeParticipacion = ((float) cantidadDeVotos * 100 ) / (float) potencialElectoral;
+    
+    printf(CYAN_T "La suma total de votos de los docentes es %d\n" RESET_COLOR, cantidadDeVotos);
+    printf("El potencial electoral es de: %d\n", potencialElectoral);
+    printf("El porcentaje de participacion es de: %.2f\n", porcentajeDeParticipacion);
+    printf("El porcentaje de abstencion es de: %.2f\n" RESET_COLOR, 100.0 - porcentajeDeParticipacion);
+
+    float porcentajeVotos[5];
+    for (int i = 0; i < cantidadDeCandidatos; i++) {
+        porcentajeVotos[i] = ((float)votos[i] / cantidadDeVotos) * 100 ;
+    }
+
+    printf(AMARILLO_T "CATEGORIA: DOCENTES\n" RESET_COLOR);
+    printf(VERDE_T"-------------------------------------------------\n" RESET_COLOR);
+    printf(VERDE_T"|\tCANDIDATO\tVOTOS\t\t%%\t|\n" RESET_COLOR);
+    rewind(archivoVotosDocentes);
+    fscanf(archivoVotosDocentes, "%d", &cantidadDeCandidatos);
+    for(int i = 0; i < cantidadDeCandidatos; i++){
+        
+    printf(VERDE_T"-------------------------------------------------\n" RESET_COLOR);
+        fscanf(archivoVotosDocentes, "%s %d %d", nommbreElector, &numCandidato[i], &votos[i]);
+        printf(VERDE_T"|\t%d.%s\t  %d\t\t%.2f\t|\n", numCandidato[i], nommbreElector, votos[i], porcentajeVotos[i]);
+    }
+   printf(VERDE_T"-------------------------------------------------\n" RESET_COLOR);
+
+    printf(CYAN_T "Cantidad de votos realizados: %d\n" RESET_COLOR, cantidadDeVotos);
+    printf("Potencial electoral: %d\n", potencialElectoral);
+    printf("Porcentaje de participacion: %.2f\n", porcentajeDeParticipacion);
+    printf("Porcentaje de abstencion: %.2f\n" RESET_COLOR, 100.0 - porcentajeDeParticipacion);
+
+    fclose(archivoVotosDocentes);
+    fclose(archivoElectores);
+}
+
+
+void verPorcentajes(){
+    FILE *archivoResultados = fopen("resultadosGenerales.txt", "r");
+
+    char candidato[50];
+    int numeroCandidato[5], cantidadDeCandidatos;
+    float porcentajeVoto[5];
+
+    fscanf(archivoResultados, "%d", &cantidadDeCandidatos);
+
+    printf(AZUL_T  "Los resultados en porcentajes son los siguientes: \n" RESET_COLOR);
+    for(int i = 0; i < cantidadDeCandidatos; i++){
+        fscanf(archivoResultados, "%s %d %f", candidato, &numeroCandidato[i], &porcentajeVoto[i]);
+        printf( ROJO_T "El Candidato [%d] %s tiene un porcentaje de votos de %f\n" RESET_COLOR, numeroCandidato[i], candidato, porcentajeVoto[i]*100);
+    }
+
+    fclose(archivoResultados);
+}
+
+
+// Función para autenticar al administrador
+int verificarAdmins() {
+    char documentoIdentidad[50];
+    char contraseña[50];
+    int cantidadAdministradores;
+
+    printf(AZUL_T  "\nIngrese la identificacion del administrador ( nombre ): " RESET_COLOR);
+    scanf("%s", documentoIdentidad);
+
+    printf(AMARILLO_T "Ingrese la clave: " RESET_COLOR);
+    scanf("%s", contraseña);
+
+    FILE *archivo = fopen("usuarioAdmin.txt", "r");
+    
+    char documentoIdentidadArchivo[50];
+    char contraseñaArchivo[50];
+
+    fscanf(archivo, "%d", &cantidadAdministradores);
+
+    for(int i = 0; i < cantidadAdministradores; i++){
+        fscanf(archivo, "%s %s", documentoIdentidadArchivo, contraseñaArchivo);
+
+        if (strcmp(documentoIdentidad, documentoIdentidadArchivo) == 0 && strcmp(contraseña, contraseñaArchivo) == 0) {
+            fclose(archivo);
+            return 1; // Autenticación exitosa
+        } 
+    }
+
+    return 0;
+    fclose(archivo);
+}
+
+
+void registrarAdministrador() {
+    FILE *archivoAdministrador = fopen("usuarioAdmin.txt", "r");
+    FILE *auxiliarAdministrador = fopen("auxiliarAdministradores.txt", "w");
+
+    int suma;
+
+    char usuario[50];
+    char contraseña[50];
+
+    char contraseñaArchivo[50], usuarioArchivo[50];
+
+    printf(MAGENTA_T "Digite el usuario del nuevo administrador: " RESET_COLOR);
+    fgets(usuario, sizeof(usuario), stdin);
+
+    printf(MAGENTA_T "Digite la clave del nuevo administrador: " RESET_COLOR);
+    fgets(contraseña, sizeof(contraseña), stdin);
+
+    fscanf(archivoAdministrador, "%d", &suma);
+
+    fprintf(auxiliarAdministrador, "%d\n", suma + 1);
+    
+    for (int i = 0; i < suma; i++) {
+        fscanf(archivoAdministrador, "%s %s", usuarioArchivo, contraseñaArchivo);
+
+        if (strcmp(contraseña, contraseñaArchivo) == 0 && strcmp(usuario, usuarioArchivo) == 0) {
+            printf( ROJO_T "El administrador con usuario %s y contraseña %s ya existe\n" RESET_COLOR, usuario, contraseña);
+            fclose(archivoAdministrador);
+            fclose(auxiliarAdministrador);
+            remove("auxiliarAdministradores.txt");  // Elimina el archivo de respaldo
+            return;
+        }
+
+        fprintf(auxiliarAdministrador, "%s\n%s\n", usuarioArchivo, contraseñaArchivo);
+    }
+
+    fprintf(auxiliarAdministrador, "%s %s\n", usuario, contraseña);
+
+    fclose(archivoAdministrador);
+    fclose(auxiliarAdministrador);
+
+    remove("usuarioAdmin.txt");
+    rename("auxiliarAdministradores.txt", "usuarioAdmin.txt");
+
+    printf(AZUL_T  "Administrador ingresado con exito\n" RESET_COLOR);
+}
+
+
+void eliminarAdministrador(){
+     FILE *archivoAdministrador = fopen("usuarioAdmin.txt", "r");
+    FILE *auxiliarAdministrador = fopen("auxiliarAdministradores.txt", "w");
+    int suma, verificacion = 0;
+
+    char usuario[50];
+    char contraseña[50];
+
+    char contraseñaArchivo[50], usuarioArchivo[50];
+
+    printf(CYAN_T "Digite el usuario del administrador que desea eliminar: " RESET_COLOR);
+    fgets(usuario, sizeof(usuario), stdin);
+     usuario[strcspn(usuario, "\n")] = '\0';  // Elimina el carácter de nueva línea
+
+    printf(CYAN_T "Digite la clave del administrador que desea eliminar " RESET_COLOR);
+    fgets(contraseña, sizeof(contraseña), stdin);
+     contraseña[strcspn(contraseña, "\n")] = '\0';  // Elimina el carácter de nueva línea
+
+    fscanf(archivoAdministrador, "%d", &suma);
+
+    if(suma == 1){
+        printf(AZUL_T  "Solamente hay un administrador registrado, debe haber mas de uno para poder eliminar un administrador\n" RESET_COLOR);
+        fclose(archivoAdministrador);
+        fclose(auxiliarAdministrador);
+        return;
+    }
+
+    fprintf(auxiliarAdministrador, "%d\n", suma - 1);
+    
+    for (int i = 0; i < suma; i++) {
+        fscanf(archivoAdministrador, "%s %s", usuarioArchivo, contraseñaArchivo);
+
+        if (strcmp(contraseña, contraseñaArchivo) == 0 && strcmp(usuario, usuarioArchivo) == 0) {
+            printf(AMARILLO_T "El administrador con usuario %s y clave %s es quien desea eliminar? (SI: 1/ NO: 0): " RESET_COLOR, usuario, contraseña);
+            scanf("%d", &verificacion);
+
+            if(verificacion == 0){
+                printf(CYAN_T "Volviendo al menu\n" RESET_COLOR);
+                fclose(archivoAdministrador);
+                fclose(auxiliarAdministrador);
+                remove("auxiliarAdministradores.txt");
+            }
+            
+        } else {
+            fprintf(auxiliarAdministrador, "%s\n%s\n", usuarioArchivo, contraseñaArchivo);
+        }
+    }
+
+    printf(AZUL_T  "Administrador eliminado\n" RESET_COLOR);
+
+    fclose(archivoAdministrador);
+    fclose(auxiliarAdministrador);
+
+    remove("usuarioAdmin.txt");
+    rename("auxiliarAdministradores.txt", "usuarioAdmin.txt");
+
+}
+
+
+int verificarUsuario() {
+    char documentoIdentidad[50];
+    char contraseña[50];
+
+    printf(VERDE_T"\nIngrese el identificacion de identidad del usuario: " RESET_COLOR);
+    scanf("%s", documentoIdentidad);
+
+    printf(VERDE_T"Ingrese la clave: ");
+    scanf("%s", contraseña);
+
+    FILE *archivo = fopen("usuarioNormal.txt", "r");
+    
+    char documentoIdentidadArchivo[50];
+    char contraseñaArchivo[50];
+
+    fscanf(archivo, "%s %s", documentoIdentidadArchivo, contraseñaArchivo);
+    fclose(archivo);
+
+    if (strcmp(documentoIdentidad, documentoIdentidadArchivo) == 0 && strcmp(contraseña, contraseñaArchivo) == 0) {
+        return 1; // Autenticación exitosa
+    } else {
+        return 0; // Autenticación fallida
+    }
+}
+
+
+void tablaTernado(){
+    FILE *archivoResultados = fopen("resultadosGenerales.txt", "r");
+    FILE *archivosDocentes = fopen("docentesCantidadVotos.txt", "r");
+    FILE *archivosEstudiantes = fopen("estudiantesCantidadVotos.txt", "r");
+    FILE *archivosEgresados = fopen("egresadosCantidadVotos.txt", "r");
+    FILE *archivosAdministrativos = fopen("administrativosCantidadVotos.txt", "r");
+    FILE *archivoVotos = fopen("Votos.txt", "r");
+   
+
+    char nombreCandidato1[20];
+    char votosEnBlanco[20];
+
+    int cantidadDeCandidatos;
+    int numeroDelCandidato[5];
+    int cantidadDeVotos[5];
+    float porcentajeVotos[5];
+
+    int totalVotosEstudiantes = 0;
+    int totalVotosDocentes = 0;
+    int totalVotosAdministrativos = 0;
+    int totalVotosEgresados = 0;
+    int totalVotos = 0;
+    
+    float totalPorcentaje = 0.0;
+
+    fscanf(archivoVotos, "%d", &cantidadDeCandidatos);
+    fscanf(archivosEstudiantes, "%d", &cantidadDeCandidatos);
+    fscanf(archivosEgresados, "%d", &cantidadDeCandidatos);
+    fscanf(archivosAdministrativos, "%d", &cantidadDeCandidatos);
+    fscanf(archivosDocentes, "%d", &cantidadDeCandidatos);
+    fscanf(archivoResultados, "%d", &cantidadDeCandidatos);
+
+    printf(MAGENTA_T " ---------------------------------------------------------------------------------------------------------------------------------------------------------------\n" RESET_COLOR);
+    printf(MAGENTA_T "| NOMBRES CANDIDATOS\t|   DOCENTES\t|   ESTUDIANTES\t|   EGRESADOS\t| ADMINISTRATIVOS\t|\tTOTAL\t|\t100%%\t\t|\tRESULTADO\t|\n" RESET_COLOR);
+
+    for(int i = 0; i < cantidadDeCandidatos; i++){
+        
+    printf(" ---------------------------------------------------------------------------------------------------------------------------------------------------------------\n" RESET_COLOR);
+        fscanf(archivosDocentes, "%s %d %d", nombreCandidato1, &numeroDelCandidato[i], &cantidadDeVotos[i]);
+
+        if(strlen(nombreCandidato1) > 11){
+             printf("| %d. %s\t|\t%d\t", numeroDelCandidato[i], nombreCandidato1, cantidadDeVotos[i]);
+        } else {
+        printf("| %d. %s\t\t|\t%d\t", numeroDelCandidato[i], nombreCandidato1, cantidadDeVotos[i]);
+        }
+
+        totalVotosDocentes += cantidadDeVotos[i];
+
+        fscanf(archivosEstudiantes, "%s %d %d", nombreCandidato1, &numeroDelCandidato[i], &cantidadDeVotos[i]);
+        printf("|\t%d\t", cantidadDeVotos[i]);
+        totalVotosEstudiantes += cantidadDeVotos[i];
+
+        fscanf(archivosEgresados, "%s %d %d", nombreCandidato1, &numeroDelCandidato[i], &cantidadDeVotos[i]);
+        printf("|\t%d\t", cantidadDeVotos[i]);
+        totalVotosEgresados += cantidadDeVotos[i];
+
+        fscanf(archivosAdministrativos, "%s %d %d", nombreCandidato1, &numeroDelCandidato[i], &cantidadDeVotos[i]);
+        printf("|\t%d\t\t", cantidadDeVotos[i]);
+        totalVotosAdministrativos += cantidadDeVotos[i];
+
+        fscanf(archivoVotos, "%s %d %d", nombreCandidato1, &numeroDelCandidato[i], &cantidadDeVotos[i]);
+        printf("|\t%d\t", cantidadDeVotos[i]);
+        totalVotos += cantidadDeVotos[i];
+
+        fscanf(archivoResultados, "%s %d %f", nombreCandidato1, &numeroDelCandidato[i], &porcentajeVotos[i]);
+        printf("|\t%.4f\t\t|\t%.2f%%\t\t|\n", porcentajeVotos[i], porcentajeVotos[i] * 100);
+        totalPorcentaje += porcentajeVotos[i];
+
+    }
+    
+    printf(MAGENTA_T " ---------------------------------------------------------------------------------------------------------------------------------------------------------------\n" RESET_COLOR);
+    printf(MAGENTA_T "| Total votos\t\t|\t%d\t|\t%d\t|\t%d\t|\t%d\t\t|\t%d\t|\t%.f%%\t\t|\t%.f%%\t\t|\n" RESET_COLOR, totalVotosDocentes, totalVotosEstudiantes, totalVotosEgresados, totalVotosAdministrativos, totalVotos, totalPorcentaje * 100, totalPorcentaje * 100);
+    printf(MAGENTA_T " ---------------------------------------------------------------------------------------------------------------------------------------------------------------\n\n\n" RESET_COLOR);
+
+
+    FILE *archivoTernado = fopen("ternado.txt", "r");
+   
+
+    printf( ROJO_T " -----------------------------------------------------------------------\n" RESET_COLOR);
+    printf(AZUL_T  "|\tTernados\t|\tNombres\t\t|\tResultados\t|\n" RESET_COLOR);
+    fscanf(archivoTernado, "%d", &cantidadDeCandidatos);
+    // printf("%d\n", cantidadDeCandidatos);
+    for(int i = 0; i < cantidadDeCandidatos; i++){
+        printf( ROJO_T " -----------------------------------------------------------------------\n");
+        fscanf(archivoTernado, "%s %d %f", nombreCandidato1, &numeroDelCandidato[i], &porcentajeVotos[i]);
+        printf(AZUL_T  "|\tTernado %d\t|\t%d.%s\t|\t%f\t|\n" RESET_COLOR, i + 1, numeroDelCandidato[i], nombreCandidato1, porcentajeVotos[i]);
+    }
+
+    printf(" -----------------------------------------------------------------------\n" RESET_COLOR);
+
+
+
+    fclose(archivoResultados);
+    fclose(archivosAdministrativos);
+    fclose(archivosDocentes);
+    fclose(archivosEgresados);
+    fclose(archivosEstudiantes);
+    fclose(archivoTernado);
+    fclose(archivoVotos);
+
+}
+
+
+void modificarAMinusculas(char nombre[50]) {
+    int longitud = strlen(nombre);  // No resta 1 para incluir el carácter de nueva línea
+    
+    for (int i = 0; i < longitud; i++) {
+        nombre[i] = tolower(nombre[i]);
+    }
+}
+
+
+
+void VotoConsejo(){
+    FILE *archivoVotosConsejo = fopen("votosConsejo.txt", "r");
+    FILE *archivoElectoresConsejo = fopen("electoresConsejo.txt", "r");
+    
+
+    char nombreElector[50];
+    char contraseñaElector[50];
+
+    printf("Digite su nombre completo: ");
+    fgets(nombreElector, sizeof(nombreElector), stdin);
+    modificarAMinusculas(nombreElector);
+    nombreElector[strlen(nombreElector) - 1] = '\0';
+
+    printf("Digite su clave: ");
+    fgets(contraseñaElector, sizeof(contraseñaElector), stdin);
+    contraseñaElector[strlen(contraseñaElector) - 1] = '\0';
+
+    char nombreElectorArchivo[50];
+    char contraseñaElectorArchivo[50];
+    char nombreElector2[50];
+    char estadoArchivo[50];
+    int comprobacion = 0, cantidadDeParticipantes;
+
+
+    fscanf(archivoElectoresConsejo, "%d", &cantidadDeParticipantes);
+
+    for(int i = 0; i < cantidadDeParticipantes; i++){
+        fscanf(archivoElectoresConsejo, "%s %s %s", nombreElectorArchivo, contraseñaElectorArchivo, estadoArchivo);
+
+       
+        modificarAMinusculas(nombreElectorArchivo);
+        // printf("%s\t%s\t%d\t%d\n", nombreElectorArchivo, nombreElector, strlen(nombreElectorArchivo), strlen(nombreElector));
+        if(strcmp(nombreElector, nombreElectorArchivo) == 0 && strcmp(contraseñaElector, contraseñaElectorArchivo) == 0){
+            
+            comprobacion = 1;
+            break;
+        }
+    }
+
+    if(comprobacion == 0){
+        printf("No se han encontrado coincidencias\n");
+        fclose(archivoElectoresConsejo);
+        fclose(archivoVotosConsejo);
+        return;
+    }
+
+    if(strcmp(estadoArchivo, "VERDADERO") == 0){
+                printf("Su voto ya ha sido realizado anteriormente, volviendo al menu\n");
+                
+                fclose(archivoElectoresConsejo);
+                fclose(archivoVotosConsejo);
+                return;
+            }
+
+    int cantidadTernado, votos, numeroCandidato, numeroIngresado, continuar = 0;
+    fscanf(archivoVotosConsejo, "%d", &cantidadTernado);
+
+    printf("Los candidatos que han llegado al ternado son los siguientes:\n");
+    for(int i = 0; i < cantidadTernado; i++){
+        fscanf(archivoVotosConsejo, "%s %d %d", nombreElector2, &numeroCandidato, &votos);
+        printf("%d. %s\n", numeroCandidato, nombreElector2);
+    }
+    printf("\n");
+
+
+    FILE *apoyoArchivoVotosConsejo = fopen("apoyoVotosConsejo.txt", "w");
+    fprintf(apoyoArchivoVotosConsejo, "%d", 3);
+
+    printf("Digite el numero del candidato por el que desea votar: ");
+    scanf("%d", &numeroIngresado);
+
+    rewind(archivoVotosConsejo);
+    fscanf(archivoVotosConsejo, "%d", &cantidadTernado);
+
+    comprobacion = 0;
+    for(int i = 0; i < cantidadTernado; i++){
+        fscanf(archivoVotosConsejo, "%s %d %d", nombreElector2, &numeroCandidato, &votos);
+        
+
+        if(numeroCandidato == numeroIngresado){
+            comprobacion = 1;
+
+            printf("El candidato por el que desea votar es %s? (Si: 1 / No: 0): ", nombreElector2);
+            scanf("%d", &continuar);
+
+            if(continuar == 1){
+                printf("El voto ha sido realizado\n");
+                fprintf(apoyoArchivoVotosConsejo, "%s\n%d\n%d\n", nombreElector2, numeroCandidato, votos + 1);
+            } else {
+                printf("Volviendo atras\n");
+                
+                
+                fclose(apoyoArchivoVotosConsejo);
+                fclose(archivoElectoresConsejo);
+                fclose(archivoVotosConsejo);
+
+                remove("apoyoVotosConsejo.txt");
+            }
+        } else {
+            fprintf(apoyoArchivoVotosConsejo, "%s\n%d\n%d\n", nombreElector2, numeroCandidato, votos);
+        }
+    }
+
+    
+
+    //CAMBIAR EL ESTADO DEL ELECTOR
+    rewind(archivoElectoresConsejo);
+    fscanf(archivoElectoresConsejo, "%d", &cantidadDeParticipantes);
+
+    FILE *apoyoArchivoElectoresConsejo = fopen("apoyoElectoresConsejo.txt", "w");
+    fprintf(apoyoArchivoElectoresConsejo, "%d\n", cantidadDeParticipantes);
+
+    for(int i = 0; i < cantidadDeParticipantes; i++){
+        fscanf(archivoElectoresConsejo, "%s %s %s", nombreElectorArchivo, contraseñaElectorArchivo,  estadoArchivo);
+
+
+        modificarAMinusculas(nombreElectorArchivo);
+        if(strcmp(nombreElector, nombreElectorArchivo) == 0 && strcmp(contraseñaElector, contraseñaElectorArchivo) == 0){
+            
+            fprintf(apoyoArchivoElectoresConsejo, "%s\n%s\n%s\n", nombreElectorArchivo, contraseñaElectorArchivo, "VERDADERO");
+        } else {
+           
+            fprintf(apoyoArchivoElectoresConsejo, "%s\n%s\n%s\n", nombreElectorArchivo, contraseñaElectorArchivo, estadoArchivo);
+        }
+    }
+
+
+    fclose(archivoElectoresConsejo);
+    fclose(archivoVotosConsejo);
+    fclose(apoyoArchivoElectoresConsejo);
+    fclose(apoyoArchivoVotosConsejo);
+
+    remove("votosConsejo.txt");
+    rename("apoyoVotosConsejo.txt", "votosConsejo.txt");
+
+    remove("electoresConsejo.txt");
+    rename("apoyoElectoresConsejo.txt", "electoresConsejo.txt");
+
+}
+
+
+
+
+int comprobacionRector(){
+    FILE *archivoElectoresConsejo = fopen("electoresConsejo.txt", "r");
+
+    char nombreElector[50];
+    char contraseñaElector[50];
+    char estado[50];
+
+    int cantidadDeElectores, comprobacion = 1;
+
+    fscanf(archivoElectoresConsejo, "%d", &cantidadDeElectores);
+    for(int i = 0; i < cantidadDeElectores; i++){
+        fscanf(archivoElectoresConsejo, "%s %s %s", nombreElector, contraseñaElector, estado);
+        if(strcmp(estado, "FALSO") == 0){
+            comprobacion = 0;
+        }
+    }
+
+    if(comprobacion == 0){
+        fclose(archivoElectoresConsejo);
+        return 0;
+    } else {
+        fclose(archivoElectoresConsejo);
+        return 1;
+    }
+
+}
+
+
+
+
+void reiniciarVotaciones(){
+    FILE *archivoElectoresConsejo = fopen("electoresConsejo.txt", "r");
+    FILE *archivoVotosConsejo = fopen("votosConsejo.txt", "r");
+
+    FILE *apoyoElectoresConsejo = fopen("apoyoElectoresConsejo.txt", "w");
+    FILE *apoyoVotosConsejo = fopen("apoyoVotosConsejo.txt", "w");
+
+    int cantidadElectores, cantidadCandidatos;
+    char nombreElector[50];
+    char contraseñaElector[50];
+    char estado[50];
+
+    char nombreCandidato[50];
+    int numeroCandidato, cantidadVotos;
+
+
+    fscanf(archivoElectoresConsejo, "%d", &cantidadElectores);
+    fprintf(apoyoElectoresConsejo, "%d\n", cantidadElectores);
+
+    for(int i = 0; i < cantidadElectores; i++){
+        fscanf(archivoElectoresConsejo, "%s %s %s", nombreElector, contraseñaElector, estado);
+        fprintf(apoyoElectoresConsejo, "%s\n%s\n%s\n", nombreElector, contraseñaElector, "FALSO");
+    }
+
+    fclose(archivoElectoresConsejo);
+    fclose(apoyoElectoresConsejo);
+    
+    remove("electoresConsejo.txt");
+    rename("apoyoElectoresConsejo.txt", "electoresConsejo.txt");
+
+
+    fscanf(archivoVotosConsejo, "%d", &cantidadCandidatos);
+    fprintf(apoyoVotosConsejo, "%d\n", cantidadCandidatos);
+
+    for(int i = 0; i < 3; i++){
+        fscanf(archivoVotosConsejo, "%s %d %d", nombreCandidato, &numeroCandidato, &cantidadVotos);
+        fprintf(apoyoVotosConsejo, "%s\n%d\n%d\n", nombreCandidato, numeroCandidato, 0);
+    }
+
+    fclose(archivoVotosConsejo);
+    fclose(apoyoVotosConsejo);
+    
+    
+    remove("votosConsejo.txt");
+    rename("apoyoVotosConsejo.txt", "votosConsejo.txt");
+
+
+}
+
+int resultadosRector(){
+    FILE *archivoVotosConsejo = fopen("votosConsejo.txt", "r");
+    int comprobacion = 0;
+    char nombreCandidato[50];
+    int numeroCandidato, cantidadVotos, cantidadCandidatos;
+
+    fscanf(archivoVotosConsejo, "%d", &cantidadCandidatos);
+
+    for(int i = 0; i < cantidadCandidatos; i++){
+        fscanf(archivoVotosConsejo, "%s %d %d", nombreCandidato, &numeroCandidato, &cantidadVotos);
+        if(cantidadVotos >= 6){
+            comprobacion = 1;
+            break;
+        }
+    }
+
+    if(comprobacion == 1){
+    
+        printf("El NUEVO RECTOR de la UTP es %s\n", nombreCandidato);
+
+
+        rewind(archivoVotosConsejo);
+        fscanf(archivoVotosConsejo, "%d", &cantidadCandidatos);
+        
+        printf("\nLos votos del consejo estudiantil son los siguientes:\n");
+        for(int i = 0; i < cantidadCandidatos; i++){
+            fscanf(archivoVotosConsejo, "%s %d %d", nombreCandidato, &numeroCandidato, &cantidadVotos);
+    
+            printf("%d. %s = %d\n", numeroCandidato, nombreCandidato, cantidadVotos);
+        }
+
+        fclose(archivoVotosConsejo);
+       
+        return 1;
+    } else {
+        rewind(archivoVotosConsejo);
+        fscanf(archivoVotosConsejo, "%d", &cantidadCandidatos);
+
+        printf("Los votos del consejo estudiantil son los siguientes:\n");
+        for(int i = 0; i < cantidadCandidatos; i++){
+            fscanf(archivoVotosConsejo, "%s %d %d", nombreCandidato, &numeroCandidato, &cantidadVotos);
+
+            printf("%d. %s = %d\n", numeroCandidato, nombreCandidato, cantidadVotos);
+        }
+
+        fclose(archivoVotosConsejo);
+        reiniciarVotaciones();
+        return 0;
+    } 
+
+}
+
+
+
+
+int main() {
+
+
+    // Menú principal
+    int eleccion, eleccion1, eleccion2, eleccion3, eleccion4, eleccion6 = 1, cantidadDeVotos;
+
+    do {
+        system("cls");  // Limpiar la pantalla
+
+        printf( ROJO_T "**********************************************\n" RESET_COLOR);
+        printf(AZUL_T  "           Sistema de Elecciones \n" RESET_COLOR);
+        printf( ROJO_T "**********************************************\n" RESET_COLOR);
+        printf(AZUL_T  "1. Ingresar como Administrador\n" RESET_COLOR);
+        printf(AZUL_T  "2. Ingresar como un votante\n" RESET_COLOR);
+        printf(AZUL_T  "3. Consultar votaciones para el consejo estudiantil\n" RESET_COLOR);
+        printf(AZUL_T  "4. Salir\n" RESET_COLOR);
+        printf( ROJO_T "**********************************************\n" RESET_COLOR);
+        printf(AZUL_T  "Seleccione una opcion: " RESET_COLOR);
+        scanf("%d", &eleccion);
+
+        system("cls");  // Limpiar la pantalla
+
+        switch (eleccion) {
+            case 1:
+                if (verificarAdmins()) {
+                    do {
+                        printf(MAGENTA_T "\n**********************************************\n" RESET_COLOR);
+                        printf(CYAN_T "              Menú Administrador\n" RESET_COLOR);
+                        printf(MAGENTA_T "**********************************************\n" RESET_COLOR);
+                        printf(CYAN_T "1. Acciones sobre Votante (registro, eliminación, etc.)\n" RESET_COLOR);
+                        printf(CYAN_T "2. Acciones sobre Candidato (registro, eliminación, etc.)\n" RESET_COLOR);
+                        printf(CYAN_T "3. Añadir/Modificar administrador\n");
+                        printf(CYAN_T "4. Salir\n" RESET_COLOR);
+                        printf(MAGENTA_T "**********************************************\n" RESET_COLOR);
+                        printf(CYAN_T "Seleccione una opcion: " RESET_COLOR);
+                        scanf("%d", &eleccion1);
+                        getchar();
+
+                        system("cls");
+
+                        switch (eleccion1) {
+                            case 1:
+                                do {
+                                    printf(AMARILLO_T "\n**********************************************\n" RESET_COLOR);
+                                    printf(AMARILLO_T "              Ingresar Nuevo Elector\n" RESET_COLOR);
+                                    printf(AMARILLO_T "**********************************************\n" RESET_COLOR);
+                                    printf(AMARILLO_T "1. Ingresar nuevo elector\n" RESET_COLOR);
+                                    printf(AMARILLO_T "2. Eliminar un elector\n" RESET_COLOR);
+                                    printf(AMARILLO_T "3. Modificar información de un elector\n" RESET_COLOR);
+                                    printf(AMARILLO_T "4. Volver atrás\n" RESET_COLOR);
+                                    printf(AMARILLO_T "**********************************************\n" RESET_COLOR);
+                                    printf(AMARILLO_T "Seleccione una opcion: " RESET_COLOR);
+                                    scanf("%d", &eleccion2);
+                                    getchar();
+                                    system("cls");
+
+                                    switch (eleccion2) {
+                                        case 1:
+                                            ingresarVotante();
+                                            break;
+
+                                        case 2:
+                                            quitarVotante();
+                                            break;
+
+                                        case 3:
+                                            cambiarVotante();
+                                            break;
+                                    }
+                                } while (eleccion2 != 4);
+                                break;
+
+                            case 2:
+                                do {
+                                    printf(AZUL_T  "\n**********************************************\n" RESET_COLOR);
+                                    printf(MAGENTA_T "              Ingresar Nuevo Candidato\n" RESET_COLOR);
+                                    printf(AZUL_T  "**********************************************\n" RESET_COLOR);
+                                    printf(MAGENTA_T "1. Ingresar nuevo candidato\n" RESET_COLOR);
+                                    printf(MAGENTA_T "2. Eliminar un candidato\n" RESET_COLOR);
+                                    printf(MAGENTA_T "3. Modificar informacion de un candidato\n" RESET_COLOR);
+                                    printf(MAGENTA_T "4. Volver atras\n" RESET_COLOR);
+                                    printf(AZUL_T  "**********************************************\n" RESET_COLOR);
+                                    printf(MAGENTA_T "Seleccione una opcion: " RESET_COLOR);
+                                    scanf("%d", &eleccion3);
+                                    getchar();
+                                    system("cls");
+
+                                    switch (eleccion3) {
+                                        case 1:
+                                            registrarCandidato();
+        
+                                            break;
+
+                                        case 2:
+                                            quitarCandidato();
+                                           
+                                            break;
+
+                                        case 3:
+                                            cambiarCandidato();
+                                            break;
+
+                                        case 4:
+                                            // Opción para volver atrás
+                                            break;
+                                    }
+                                } while (eleccion3 != 4);
+                                break;
+
+
+                            case 3:
+                                do {
+                                    printf(CYAN_T "\n**********************************************\n" RESET_COLOR);
+                                    printf(AZUL_T  "         Opciones de Administrador\n" RESET_COLOR);
+                                    printf(CYAN_T "**********************************************\n" RESET_COLOR);
+                                    printf(AZUL_T  "1. Ingresar nuevo administrador\n" RESET_COLOR);
+                                    printf(AZUL_T  "2. Eliminar un administrador\n" RESET_COLOR);
+                                    printf(AZUL_T  "3. Volver atrás\n" RESET_COLOR);
+                                    printf(CYAN_T "**********************************************\n" RESET_COLOR);
+                                    printf(AZUL_T  "Seleccione una opción: " RESET_COLOR);
+                                    scanf("%d", &eleccion6);
+                                    getchar();
+                                    system("cls");
+
+                                    switch (eleccion6) {
+                                        case 1:
+                                            registrarAdministrador();
+                                            break;
+
+                                        case 2:
+                                            eliminarAdministrador();
+                                            break;
+                                    }
+                                } while (eleccion6 != 3);
+                                break;
+
+                            case 4:
+                                printf( ROJO_T "Se ha cerrado el sistema para el administrador. Hasta luego.\n" RESET_COLOR);
+                                break;
+
+                            default:
+                                printf( ROJO_T "Opción no válida. Por favor, seleccione una opción válida.\n" RESET_COLOR);
+                        }
+                    } while (eleccion1 != 4);
+                }
+                break;
+
+            case 2:
+                    do {
+                        printf(AZUL_T  "\n**********************************************\n" RESET_COLOR);
+                        printf( ROJO_T "              Menu para el Votante\n" RESET_COLOR);
+                        printf(AZUL_T  "**********************************************\n" RESET_COLOR);
+                        printf( ROJO_T "1. Opciones de voto\n" RESET_COLOR);
+                        printf( ROJO_T "2. Ver Resultados\n" RESET_COLOR);
+                        printf( ROJO_T "3. Salir\n" RESET_COLOR);
+                        printf(AZUL_T  "**********************************************\n" RESET_COLOR);
+                        printf( ROJO_T "Seleccione una opcion: " RESET_COLOR);
+                        scanf("%d", &eleccion1);
+                        system("cls");
+
+                        switch (eleccion1) {
+                            case 1:
+                                do {
+                                    printf(MAGENTA_T "\n**********************************************\n" RESET_COLOR);
+                                    printf(AMARILLO_T "   Mostrar Candidatos y Realizar Votacion\n" RESET_COLOR);
+                                    printf(MAGENTA_T "**********************************************\n" RESET_COLOR);
+                                    printf(AMARILLO_T "1. Ver candidatos\n" RESET_COLOR);
+                                    printf(AMARILLO_T "2. Realizar votacion\n" RESET_COLOR);
+                                    printf(AMARILLO_T "3. Volver atras\n" RESET_COLOR);
+                                    printf(MAGENTA_T "**********************************************\n" RESET_COLOR);
+                                    printf(AMARILLO_T "Seleccione una opcion: " RESET_COLOR);
+                                    scanf("%d", &eleccion2);
+                                    getchar();
+                                    system("cls");
+
+                                    switch (eleccion2) {
+                                        case 1:
+                                            mostrarCandidatos();
+                                            break;
+
+                                        case 2:
+                                            emitirVoto();
+                                    
+                                            break;
+                                    }
+
+                                } while (eleccion2 != 3);
+
+                                break;
+
+                            case 2:
+                                do {
+                                    printf(AZUL_T  "\n**********************************************\n" RESET_COLOR);
+                                    printf(AZUL_T  "              Mostrar Resultados\n" RESET_COLOR);
+                                    printf(AZUL_T  "**********************************************\n" RESET_COLOR);
+                                    printf(AZUL_T  "1. Ver histogramas y tablas\n" RESET_COLOR);
+                                    printf(AZUL_T  "2. Ver Porcentajes de Voto\n" RESET_COLOR);
+                                    printf(AZUL_T  "3. Mostrar tabla de resultados finales\n" RESET_COLOR);
+                                    printf(AZUL_T  "4. Volver atras\n" RESET_COLOR);
+                                    printf(AZUL_T  "**********************************************\n" RESET_COLOR);
+                                    printf(AZUL_T  "Seleccione una opcion: " RESET_COLOR);
+                                    scanf("%d", &eleccion3);
+                                    getchar();
+                                    system("cls");
+
+                                    switch (eleccion3) {
+                                        case 1:
+                                            printf(AMARILLO_T "\n**********************************************\n" RESET_COLOR);
+                                            printf(AMARILLO_T "            Histogramas y/o Resultados\n" RESET_COLOR);
+                                            printf(AMARILLO_T "**********************************************\n" RESET_COLOR);
+                                            printf(AMARILLO_T "1. Resultados totales\n" RESET_COLOR);
+                                            printf(AMARILLO_T "2. Resultados para los estudiantes\n" RESET_COLOR);
+                                            printf(AMARILLO_T "3. Resultados para los administrativos\n" RESET_COLOR);
+                                            printf(AMARILLO_T "4. Resultados para los egresados\n" RESET_COLOR);
+                                            printf(AMARILLO_T "5. Resultados para los docentes\n" RESET_COLOR);
+                                            printf(AMARILLO_T "6. Volver atras\n" RESET_COLOR);
+                                            printf(AMARILLO_T "**********************************************\n" RESET_COLOR);
+                                            printf(AMARILLO_T "Seleccione una opcion: ");
+                                            scanf("%d", &eleccion4);
+                                            getchar();
+                                            system("cls");
+
+                                            switch (eleccion4) {
+                                                case 1:
+                                                    cantidadDeVotos = resultadosGeneral();
+                                                    histogramaResultados(cantidadDeVotos);
+                                                    break;
+
+                                                case 2:
+                                                    tablaEstudiantes();
+                                                    break;
+
+                                                case 3:
+                                                    tablaAdministrativos();
+                                                    break;
+
+                                                case 4:
+                                                    tablaEgresados();
+                                                    break;
+
+                                                case 5:
+                                                    tablaDocentes();
+                                                    break;
+                                            }
+
+                                            break;
+
+                                        case 2:
+                                            verPorcentajes();
+                                            break;
+
+                                        case 3:
+                                            tablaTernado();
+                                            break;
+                                    }
+
+                                } while (eleccion3 != 4);
+
+                                break;
+
+                            case 3:
+                                printf(AZUL_T  "Se ha cerrado el sistema de votacion. Hasta luego.\n" RESET_COLOR);
+                                break;
+
+                            default:
+                                printf( ROJO_T "Opcion no valida. Por favor, seleccione una opcion valida.\n" RESET_COLOR);
+                        }
+                    } while (eleccion1 != 3);
+                
+                break;
+
+
+            case 3:
+                do {
+                        printf(AZUL_T  "\n**********************************************\n" RESET_COLOR);
+                        printf( ROJO_T "       Menu para el Consejo Estudiantil\n" RESET_COLOR);
+                        printf(AZUL_T  "**********************************************\n" RESET_COLOR);
+                        printf( ROJO_T "1. Realizar votos del consejo\n" RESET_COLOR);
+                        printf( ROJO_T "2. Mostrar resultados del consejo\n" RESET_COLOR);
+                        printf( ROJO_T "3. Salir\n" RESET_COLOR);
+                        printf(AZUL_T  "**********************************************\n" RESET_COLOR);
+                        printf( ROJO_T "Seleccione una opcion: " RESET_COLOR);
+                        scanf("%d", &eleccion1);
+                        getchar();
+                        system("cls");
+
+                        switch(eleccion1){
+                            case 1:
+                            VotoConsejo();
+                        break;
+
+                        case 2:
+                            if(comprobacionRector()){
+                                if(resultadosRector()){
+                                    exit(0);
+                                } else {
+                                    printf("\nEL PROCESO DE ELECCION POR PARTE DE LOS MIEMBROS DEL CONSEJO SE DEBE REPETIR\n");
+                                }
+                                
+                            } else {
+                                printf("Faltan miembros del consejo por votar\n");
+                            }
+                        break;
+
+                        case 3:
+                                printf(AZUL_T  "Se ha cerrado el sistema de votacion. Hasta luego.\n" RESET_COLOR);
+                                break;
+                                    }
+
+                         }while(eleccion1 != 3);
+            break;
+
+            case 4:
+                printf(CYAN_T "Se ha cerrado el sistema para el usuario.\n\n" RESET_COLOR);
+                break;
+                
+            default:
+                printf(CYAN_T "Opcion no valida. Por favor, selecciona una eleccion valida.\n" RESET_COLOR);
+        }
+    } while (eleccion != 4);
+
+    return 0;
+}
